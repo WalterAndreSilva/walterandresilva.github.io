@@ -45,26 +45,6 @@ body {
     margin-bottom: 20px;
 }
 
-.social-links {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-}
-
-.btn {
-    text-decoration: none;
-    color: var(--bg-color);
-    background-color: var(--accent-color);
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-weight: bold;
-    transition: background-color 0.3s;
-}
-
-.btn:hover {
-    background-color: #00ccaa;
-}
-
 /* Secciones Principales */
 .section {
     background-color: var(--card-bg);
@@ -81,57 +61,48 @@ body {
     padding-bottom: 10px;
 }
 
-/* Novedades y Formulario */
-.form-novedad {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
-#input-novedad {
-    flex: 1;
-    padding: 10px;
-    background-color: #2a2a2a;
-    border: 1px solid #444;
-    color: white;
-    border-radius: 4px;
-}
-
-#input-novedad:focus {
-    outline: none;
-    border-color: var(--accent-color);
-}
-
-.btn-submit {
-    background-color: var(--accent-color);
-    color: var(--bg-color);
-    border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    border-radius: 4px;
-    font-weight: bold;
-}
-
-.btn-submit:hover {
-    background-color: #00ccaa;
-}
-
-.novedades-list {
-    list-style: none;
-}
-
-.novedades-list li {
-    background-color: #2a2a2a;
-    margin-bottom: 10px;
-    padding: 15px;
-    border-left: 4px solid var(--accent-color);
-    border-radius: 0 4px 4px 0;
-}
-
-/* Footer */
+/* Footer y Redes Sociales */
 footer {
     text-align: center;
-    padding: 20px 0;
+    padding: 30px 0;
     color: #777;
     margin-top: 40px;
+    border-top: 1px solid #222;
+}
+
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.footer-social {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Estilos para los botones de icono */
+.icon-btn {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: var(--card-bg);
+    color: var(--accent-color);
+    border: 1px solid #333;
+    font-size: 1.2rem;
+    text-decoration: none;
+    transition: transform 0.2s ease-in-out, background-color 0.2s, color 0.2s;
+}
+
+/* Efecto Hover: se agranda el icono y cambia el fondo */
+.icon-btn:hover {
+    transform: scale(1.15); /* Agranda el icono un 15% */
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+    box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
 }
