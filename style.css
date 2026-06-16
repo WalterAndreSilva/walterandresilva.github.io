@@ -12,6 +12,69 @@
     box-sizing: border-box;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
+/* =========================================
+ *  ESTILOS PARA SINGLE PAGE APPLICATION
+ *  ========================================= */
+.hidden-section {
+    display: none;
+}
+
+.active-section {
+    display: block;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+/* Transición suave al cambiar de pestaña */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================
+ *  BARRA DE NAVEGACIÓN (Nuevos estilos)
+ *  ========================================= */
+.navbar {
+    background-color: var(--card-bg);
+    border-bottom: 2px solid var(--accent-color);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.nav-links {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    padding: 15px 0;
+    margin: 0;
+    gap: 30px;
+}
+
+.nav-links li a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 1.1rem;
+    font-weight: bold;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Efecto hover y clase "active" para la página actual */
+.nav-links li a:hover,
+.nav-links li a.active {
+    background-color: var(--accent-color);
+    color: var(--bg-color);
+}
+
+/* fin barra superior       */
 
 body {
     background-color: var(--bg-color);
@@ -28,7 +91,7 @@ body {
 /* Header / Hero */
 .hero {
     background-color: var(--card-bg);
-    padding: 60px 0;
+    padding: 10px 0;
     text-align: center;
     border-bottom: 2px solid var(--accent-color);
 }
@@ -47,13 +110,11 @@ body {
 
 /* Secciones Principales */
 .section {
-    background-color: var(--card-bg);
+    background-color: transparent;
     margin: 40px 0;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    padding: 0;
+    box-shadow: none;
 }
-
 .section h3 {
     margin-bottom: 15px;
     color: var(--accent-color);
@@ -77,6 +138,30 @@ body {
     flex-direction: column;
     justify-content: space-between;
     transition: transform 0.2s ease, border-color 0.2s;
+}
+
+/* =========================================
+ *  CAJAS INTERNAS (Sección Proyectos)
+ *  ========================================= */
+.caja-interna {
+    background-color: var(--card-bg);
+    margin-bottom: 30px;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    border: 1px solid #222;
+}
+
+/* Eliminar el margen inferior del último cuadrado para que quede prolijo */
+.caja-interna:last-child {
+    margin-bottom: 0;
+}
+
+.intro-proyectos p {
+    color: #e0e0e0;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    text-align: center; /* Centrado para que se vea más como una introducción */
 }
 
 /* Efecto hover sutil para la tarjeta */
