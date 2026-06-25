@@ -6,8 +6,8 @@ let currentPlayer = 1;
 let selectedCell = null;
 let validMoves = [];
 let gameActive = true;
+let isPvE = false;
 
-// 1 = Jugador 1 (Rojo), 2 = Jugador 2 (Azul)
 // Disposición inicial de Dao en diagonal
 const initialBoard = [
     [1, 0, 0, 2],
@@ -19,7 +19,8 @@ const initialBoard = [
 // Elementos del DOM
 const boardElement = document.getElementById('game-board');
 const statusElement = document.getElementById('status');
-const btnBoard = document.getElementById('btn-board');
+const btnPvP = document.getElementById('btn-pvp');
+const btnCPU = document.getElementById('btn-cpu');
 const btnRules = document.getElementById('btn-rules');
 const boardSection = document.getElementById('board-section');
 const rulesSection = document.getElementById('rules-section');
@@ -44,7 +45,6 @@ function initGame() {
     renderBoard();
 }
 
-// Dibuja el tablero y las piezas
 function renderBoard() {
     boardElement.innerHTML = '';
     for (let r = 0; r < ROWS; r++) {
@@ -52,7 +52,6 @@ function renderBoard() {
             const cell = document.createElement('div');
             cell.classList.add('cell');
 
-            // Dibuja la pieza si la celda no está vacía
             const pieceVal = board[r][c];
             if (pieceVal !== 0) {
                 const piece = document.createElement('div');
@@ -70,11 +69,12 @@ function renderBoard() {
     }
 }
 
-// Maneja la interacción del usuario en cada celda
 function handleCellClick(r, c) {
     if (!gameActive) return;
 
-    // Si hace click en una pieza propia, seleccionarla
+    // Bloquear interacción si es el turno de la CPU
+    if (isPvE && currentPlayer === 2) return;
+
     if (board[r][c] === currentPlayer) {
         selectedCell = { r, c };
         calculateValidMoves(r, c);
@@ -82,7 +82,6 @@ function handleCellClick(r, c) {
         return;
     }
 
-    // Si hace click en una celda válida, ejecutar el movimiento
     if (selectedCell && validMoves.some(m => m.r === r && m.c === c)) {
         board[r][c] = currentPlayer;
         board[selectedCell.r][selectedCell.c] = 0;
@@ -95,9 +94,12 @@ function handleCellClick(r, c) {
     }
 }
 
-// Calcula hasta dónde se desliza la pieza en las 8 direcciones posibles
 function calculateValidMoves(r, c) {
-    validMoves = [];
+    validMoves = calculateValidMovesForPiece(r, c);
+}
+
+function calculateValidMovesForPiece(r, c) {
+    let moves = [];
     const directions = [
         [-1, -1], [-1, 0], [-1, 1],
         [0, -1],           [0, 1],
@@ -109,7 +111,6 @@ function calculateValidMoves(r, c) {
         let nc = c + dir[1];
         let lastEmpty = null;
 
-        // Deslizamiento continuo hasta topar pared u otra pieza
         while (nr >= 0 && nr < ROWS && nc >= 0 && nc < COLS && board[nr][nc] === 0) {
             lastEmpty = { r: nr, c: nc };
             nr += dir[0];
@@ -117,53 +118,110 @@ function calculateValidMoves(r, c) {
         }
 
         if (lastEmpty) {
-            validMoves.push(lastEmpty);
+            moves.push(lastEmpty);
         }
     });
+    return moves;
 }
 
-// Analiza si el movimiento reciente terminó la partida
 function checkGameEnd() {
-    // 1. ¿Logró el jugador actual una condición de victoria?
     if (checkWin(currentPlayer)) {
-        endGameShowModal(`¡El Jugador ${currentPlayer} ha ganado!`);
+        endGameShowModal(currentPlayer === 2 && isPvE ? `¡La CPU ha ganado!` : `¡El Jugador ${currentPlayer} ha ganado!`);
         return;
     }
 
-    // 2. ¿Encerró accidentalmente al rival perdiendo la partida?
     if (checkTrapLoss(currentPlayer)) {
         const opponent = currentPlayer === 1 ? 2 : 1;
-        endGameShowModal(`¡Jugador ${currentPlayer} atrapó al rival y PIERDE!\nGana Jugador ${opponent}.`);
+        let winnerText = opponent === 2 && isPvE ? "La CPU" : `Jugador ${opponent}`;
+        let loserText = currentPlayer === 2 && isPvE ? "La CPU" : `Jugador ${currentPlayer}`;
+
+        endGameShowModal(`¡${loserText} atrapó al rival y PIERDE!\nGana ${winnerText}.`);
         return;
     }
 
-    // Cambiar de turno si nadie ganó aún
     currentPlayer = currentPlayer === 1 ? 2 : 1;
     updateStatus();
+
+    if (gameActive && isPvE && currentPlayer === 2) {
+        setTimeout(makeAIMove, 600);
+    }
 }
 
-// Nueva función que despliega el modal con el resultado
+// --- Lógica de la CPU ---
+function makeAIMove() {
+    if (!gameActive || currentPlayer !== 2) return;
+
+    let allMoves = [];
+
+    // Recopilar todos los movimientos válidos para la CPU
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            if (board[r][c] === 2) {
+                let pieceMoves = calculateValidMovesForPiece(r, c);
+                pieceMoves.forEach(move => {
+                    allMoves.push({ from: { r, c }, to: move });
+                });
+            }
+        }
+    }
+
+    if (allMoves.length === 0) return;
+
+    let chosenMove = null;
+
+    // Comprobar si hay un movimiento que gane inmediatamente
+    for (let move of allMoves) {
+        // Simular movimiento
+        board[move.to.r][move.to.c] = 2;
+        board[move.from.r][move.from.c] = 0;
+
+        if (checkWin(2)) {
+            chosenMove = move;
+        }
+
+        // Deshacer movimiento
+        board[move.from.r][move.from.c] = 2;
+        board[move.to.r][move.to.c] = 0;
+
+        if (chosenMove) break; // Si encontramos uno ganador, detenemos la búsqueda
+    }
+
+    // Si no hay movimiento ganador, elegir uno al azar
+    if (!chosenMove) {
+        chosenMove = allMoves[Math.floor(Math.random() * allMoves.length)];
+    }
+
+    // Ejecutar el movimiento con un efecto visual seleccionando primero la ficha
+    selectedCell = chosenMove.from;
+    renderBoard();
+
+    setTimeout(() => {
+        board[chosenMove.to.r][chosenMove.to.c] = 2;
+        board[chosenMove.from.r][chosenMove.from.c] = 0;
+        selectedCell = null;
+        renderBoard();
+        checkGameEnd();
+    }, 400);
+}
+// ------------------------
+
 function endGameShowModal(message) {
-    statusElement.innerText = message; // Actualiza el texto de atrás también
-    modalMessageElement.innerText = message; // Pone el texto en el cartel
-    modalElement.classList.remove('hidden'); // Muestra el modal
+    statusElement.innerText = message;
+    modalMessageElement.innerText = message;
+    modalElement.classList.remove('hidden');
     gameControlsElement.style.visibility = 'hidden';
     gameActive = false;
 }
 
-// Verifica las tres formas clásicas de ganar en Dao
 function checkWin(p) {
-    // 1. Ocupar las 4 esquinas
     if (board[0][0] === p && board[0][3] === p && board[3][0] === p && board[3][3] === p) return true;
 
-    // 2. Formar un cuadrado 2x2
     for (let r = 0; r <= 2; r++) {
         for (let c = 0; c <= 2; c++) {
             if (board[r][c] === p && board[r+1][c] === p && board[r][c+1] === p && board[r+1][c+1] === p) return true;
         }
     }
 
-    // 3. Formar una línea recta (horizontal o vertical)
     for (let i = 0; i < 4; i++) {
         let rowWin = true, colWin = true;
         for (let j = 0; j < 4; j++) {
@@ -176,7 +234,6 @@ function checkWin(p) {
     return false;
 }
 
-// Verifica la regla donde un jugador pierde si acorrala la pieza del oponente en una esquina
 function checkTrapLoss(p) {
     const opp = p === 1 ? 2 : 1;
     const corners = [
@@ -201,22 +258,42 @@ function checkTrapLoss(p) {
     return false;
 }
 
-// Actualiza el texto en la interfaz visual
 function updateStatus() {
-    statusElement.innerText = `Turno del Jugador ${currentPlayer}`;
+    if (isPvE && currentPlayer === 2) {
+        statusElement.innerText = `Turno de la CPU`;
+    } else {
+        statusElement.innerText = `Turno del Jugador ${currentPlayer}`;
+    }
     statusElement.style.color = currentPlayer === 1 ? '#ff7675' : '#74b9ff';
 }
 
-btnBoard.addEventListener('click', () => {
-    btnBoard.classList.add('active');
+// --- Gestión de Pestañas ---
+function setActiveTab(activeBtn) {
+    btnPvP.classList.remove('active');
+    btnCPU.classList.remove('active');
     btnRules.classList.remove('active');
-    boardSection.classList.remove('hidden');
-    rulesSection.classList.add('hidden');
+    activeBtn.classList.add('active');
+
+    if (activeBtn !== btnRules) {
+        boardSection.classList.remove('hidden');
+        rulesSection.classList.add('hidden');
+    }
+}
+
+btnPvP.addEventListener('click', () => {
+    isPvE = false;
+    setActiveTab(btnPvP);
+    initGame();
+});
+
+btnCPU.addEventListener('click', () => {
+    isPvE = true;
+    setActiveTab(btnCPU);
+    initGame();
 });
 
 btnRules.addEventListener('click', () => {
-    btnRules.classList.add('active');
-    btnBoard.classList.remove('active');
+    setActiveTab(btnRules);
     rulesSection.classList.remove('hidden');
     boardSection.classList.add('hidden');
 });
@@ -224,4 +301,5 @@ btnRules.addEventListener('click', () => {
 btnRestart.addEventListener('click', initGame);
 modalBtnRestart.addEventListener('click', initGame);
 
+// Iniciar
 initGame();

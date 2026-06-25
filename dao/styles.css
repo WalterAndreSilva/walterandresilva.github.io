@@ -196,7 +196,8 @@ hr {
     background: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-end;
+    padding-bottom: 40px;
     z-index: 1000;
 }
 
@@ -204,19 +205,14 @@ hr {
     background: white;
     padding: 40px;
     border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 -5px 25px rgba(0,0,0,0.2);
     text-align: center;
     display: flex;
     flex-direction: column;
     gap: 20px;
+    width: 600px;
     max-width: 90%;
-    animation: popIn 0.3s ease-out;
-}
-
-.modal-content h2 {
-    font-size: 2rem;
-    color: #2c3e50;
-    white-space: pre-wrap;
+    animation: slideUp 0.3s ease-out;
 }
 
 #modal-btn-restart {
@@ -235,8 +231,13 @@ transition: background 0.3s;
 background: #c0392b;
 }
 
-/* Pequeña animación para que el cartel aparezca con un salto */
-@keyframes popIn {
-    from { transform: scale(0.2); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
