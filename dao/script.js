@@ -7,8 +7,65 @@ let selectedCell = null;
 let validMoves = [];
 let gameActive = true;
 let isPvE = false;
+let currentLang = 'en';
 
-// Disposición inicial de Dao en diagonal
+const translations = {
+    es: {
+        pvp: "P vs P",
+        pvcpu: "P vs CPU",
+        rulesBtn: "Reglas",
+        restart: "Reiniciar Juego",
+        rulesTitle: "Reglas de Dao",
+        rulesP1: "Dao es un juego abstracto para dos jugadores en un tablero de 4x4. El objetivo es cumplir <strong>una</strong> de las siguientes condiciones de victoria:",
+        rulesL1: "Formar una línea recta (horizontal o vertical) con tus 4 piezas.",
+        rulesL2: "Formar un cuadrado de 2x2 con tus piezas en cualquier lugar del tablero.",
+        rulesL3: "Ocupar las 4 esquinas del tablero.",
+        rulesMoveTitle: "Movimiento",
+        rulesMoveP: "En tu turno, debes seleccionar y mover una de tus piezas. Las piezas se deslizan ortogonal o diagonalmente (como una reina en ajedrez) pero <strong>deben continuar moviéndose</strong> hasta chocar con el borde del tablero o con otra pieza.",
+        rulesSpecialTitle: "Regla Especial (Atrapado)",
+        rulesSpecialP: "Si al finalizar tu movimiento encierras una pieza del oponente en una esquina usando 3 de tus piezas, ¡pierdes automáticamente la partida por obligarlo a no poder moverse!",
+        playAgain: "Volver a jugar",
+        turnP1: "Turno del Jugador 1",
+        turnP2: "Turno del Jugador 2",
+        turnCPU: "Turno de la CPU",
+        winP1: "¡El Jugador 1 ha ganado!",
+        winP2: "¡El Jugador 2 ha ganado!",
+        winCPU: "¡La CPU ha ganado!",
+        trapLoss: "¡{loser} atrapó al rival y PIERDE!\nGana {winner}.",
+        player1: "Jugador 1",
+        player2: "Jugador 2",
+        cpu: "La CPU",
+        langToggle: "🌐 ES"
+    },
+    en: {
+        pvp: "P vs P",
+        pvcpu: "P vs CPU",
+        rulesBtn: "Rules",
+        restart: "Restart Game",
+        rulesTitle: "Dao Rules",
+        rulesP1: "Dao is an abstract two-player game on a 4x4 board. The goal is to fulfill <strong>one</strong> of the following win conditions:",
+        rulesL1: "Form a straight line (horizontal or vertical) with your 4 pieces.",
+        rulesL2: "Form a 2x2 square with your pieces anywhere on the board.",
+        rulesL3: "Occupy the 4 corners of the board.",
+        rulesMoveTitle: "Movement",
+        rulesMoveP: "On your turn, you must select and move one of your pieces. Pieces slide orthogonally or diagonally (like a queen in chess) but <strong>must continue moving</strong> until they hit the edge of the board or another piece.",
+        rulesSpecialTitle: "Special Rule (Trapped)",
+        rulesSpecialP: "If at the end of your move you trap an opponent's piece in a corner using 3 of your pieces, you automatically lose the game for forcing them into a position where they cannot move!",
+        playAgain: "Play Again",
+        turnP1: "Player 1's Turn",
+        turnP2: "Player 2's Turn",
+        turnCPU: "CPU's Turn",
+        winP1: "Player 1 has won!",
+        winP2: "Player 2 has won!",
+        winCPU: "CPU has won!",
+        trapLoss: "{loser} trapped the opponent and LOSES!\n{winner} wins.",
+        player1: "Player 1",
+        player2: "Player 2",
+        cpu: "The CPU",
+        langToggle: "🌐 EN"
+    }
+};
+
 const initialBoard = [
     [1, 0, 0, 2],
     [0, 1, 2, 0],
@@ -29,6 +86,7 @@ const gameControlsElement = document.getElementById('game-controls');
 const modalElement = document.getElementById('game-over-modal');
 const modalMessageElement = document.getElementById('modal-message');
 const modalBtnRestart = document.getElementById('modal-btn-restart');
+const btnLang = document.getElementById('btn-lang');
 
 // Inicializa o reinicia el estado de la partida
 function initGame() {
@@ -72,7 +130,6 @@ function renderBoard() {
 function handleCellClick(r, c) {
     if (!gameActive) return;
 
-    // Bloquear interacción si es el turno de la CPU
     if (isPvE && currentPlayer === 2) return;
 
     if (board[r][c] === currentPlayer) {
@@ -126,16 +183,22 @@ function calculateValidMovesForPiece(r, c) {
 
 function checkGameEnd() {
     if (checkWin(currentPlayer)) {
-        endGameShowModal(currentPlayer === 2 && isPvE ? `¡La CPU ha ganado!` : `¡El Jugador ${currentPlayer} ha ganado!`);
+        let winMessage = currentPlayer === 1 ? translations[currentLang].winP1 :
+        (isPvE ? translations[currentLang].winCPU : translations[currentLang].winP2);
+        endGameShowModal(winMessage);
         return;
     }
 
     if (checkTrapLoss(currentPlayer)) {
         const opponent = currentPlayer === 1 ? 2 : 1;
-        let winnerText = opponent === 2 && isPvE ? "La CPU" : `Jugador ${opponent}`;
-        let loserText = currentPlayer === 2 && isPvE ? "La CPU" : `Jugador ${currentPlayer}`;
+        let winnerText = opponent === 2 && isPvE ? translations[currentLang].cpu : translations[currentLang]["player" + opponent];
+        let loserText = currentPlayer === 2 && isPvE ? translations[currentLang].cpu : translations[currentLang]["player" + currentPlayer];
 
-        endGameShowModal(`¡${loserText} atrapó al rival y PIERDE!\nGana ${winnerText}.`);
+        let trapMessage = translations[currentLang].trapLoss
+        .replace("{loser}", loserText)
+        .replace("{winner}", winnerText);
+
+        endGameShowModal(trapMessage);
         return;
     }
 
@@ -147,13 +210,11 @@ function checkGameEnd() {
     }
 }
 
-// --- Lógica de la CPU ---
 function makeAIMove() {
     if (!gameActive || currentPlayer !== 2) return;
 
     let allMoves = [];
 
-    // Recopilar todos los movimientos válidos para la CPU
     for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
             if (board[r][c] === 2) {
@@ -169,9 +230,7 @@ function makeAIMove() {
 
     let chosenMove = null;
 
-    // Comprobar si hay un movimiento que gane inmediatamente
     for (let move of allMoves) {
-        // Simular movimiento
         board[move.to.r][move.to.c] = 2;
         board[move.from.r][move.from.c] = 0;
 
@@ -179,19 +238,16 @@ function makeAIMove() {
             chosenMove = move;
         }
 
-        // Deshacer movimiento
         board[move.from.r][move.from.c] = 2;
         board[move.to.r][move.to.c] = 0;
 
-        if (chosenMove) break; // Si encontramos uno ganador, detenemos la búsqueda
+        if (chosenMove) break;
     }
 
-    // Si no hay movimiento ganador, elegir uno al azar
     if (!chosenMove) {
         chosenMove = allMoves[Math.floor(Math.random() * allMoves.length)];
     }
 
-    // Ejecutar el movimiento con un efecto visual seleccionando primero la ficha
     selectedCell = chosenMove.from;
     renderBoard();
 
@@ -203,7 +259,6 @@ function makeAIMove() {
         checkGameEnd();
     }, 400);
 }
-// ------------------------
 
 function endGameShowModal(message) {
     statusElement.innerText = message;
@@ -259,10 +314,12 @@ function checkTrapLoss(p) {
 }
 
 function updateStatus() {
+    if (!gameActive) return;
+
     if (isPvE && currentPlayer === 2) {
-        statusElement.innerText = `Turno de la CPU`;
+        statusElement.innerText = translations[currentLang].turnCPU;
     } else {
-        statusElement.innerText = `Turno del Jugador ${currentPlayer}`;
+        statusElement.innerText = currentPlayer === 1 ? translations[currentLang].turnP1 : translations[currentLang].turnP2;
     }
     statusElement.style.color = currentPlayer === 1 ? '#ff7675' : '#74b9ff';
 }
@@ -279,6 +336,26 @@ function setActiveTab(activeBtn) {
         rulesSection.classList.add('hidden');
     }
 }
+
+// --- Gestión de Idiomas ---
+function updateTranslations() {
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (translations[currentLang][key]) {
+            el.innerHTML = translations[currentLang][key];
+        }
+    });
+
+    btnLang.innerText = translations[currentLang].langToggle;
+    updateStatus();
+}
+
+function toggleLanguage() {
+    currentLang = currentLang === 'en' ? 'es' : 'en';
+    updateTranslations();
+}
+
+btnLang.addEventListener('click', toggleLanguage);
 
 btnPvP.addEventListener('click', () => {
     isPvE = false;
@@ -301,5 +378,5 @@ btnRules.addEventListener('click', () => {
 btnRestart.addEventListener('click', initGame);
 modalBtnRestart.addEventListener('click', initGame);
 
-// Iniciar
 initGame();
+updateTranslations();
