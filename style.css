@@ -245,13 +245,13 @@ body {
 }
 
 /*         */
-.skills-container {
+.enum-container {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
 }
 
-.skill-badge {
+.enum-badge {
     background-color: #2a2a2a;
     color: var(--accent-color);
     padding: 5px 15px;
