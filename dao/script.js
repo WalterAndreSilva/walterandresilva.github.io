@@ -11,9 +11,9 @@ let gameActive = true;
 // Disposición inicial de Dao en diagonal
 const initialBoard = [
     [1, 0, 0, 2],
-[0, 1, 2, 0],
-[0, 2, 1, 0],
-[2, 0, 0, 1]
+    [0, 1, 2, 0],
+    [0, 2, 1, 0],
+    [2, 0, 0, 1]
 ];
 
 // Elementos del DOM
@@ -24,13 +24,10 @@ const btnRules = document.getElementById('btn-rules');
 const boardSection = document.getElementById('board-section');
 const rulesSection = document.getElementById('rules-section');
 const btnRestart = document.getElementById('btn-restart');
-// Nuevos Elementos del DOM para el modal
 const gameControlsElement = document.getElementById('game-controls');
 const modalElement = document.getElementById('game-over-modal');
 const modalMessageElement = document.getElementById('modal-message');
 const modalBtnRestart = document.getElementById('modal-btn-restart');
-
-
 
 // Inicializa o reinicia el estado de la partida
 function initGame() {
@@ -40,8 +37,8 @@ function initGame() {
     validMoves = [];
     gameActive = true;
 
-    modalElement.classList.add('hidden'); // Ocultar el cartel flotante
-    gameControlsElement.classList.remove('hidden')
+    modalElement.classList.add('hidden');
+    gameControlsElement.style.visibility = 'visible';
 
     updateStatus();
     renderBoard();
@@ -150,7 +147,7 @@ function endGameShowModal(message) {
     statusElement.innerText = message; // Actualiza el texto de atrás también
     modalMessageElement.innerText = message; // Pone el texto en el cartel
     modalElement.classList.remove('hidden'); // Muestra el modal
-    gameControlsElement.classList.add('hidden');
+    gameControlsElement.style.visibility = 'hidden';
     gameActive = false;
 }
 
@@ -210,7 +207,6 @@ function updateStatus() {
     statusElement.style.color = currentPlayer === 1 ? '#ff7675' : '#74b9ff';
 }
 
-// Escuchadores de eventos para la navegación lateral
 btnBoard.addEventListener('click', () => {
     btnBoard.classList.add('active');
     btnRules.classList.remove('active');
@@ -228,5 +224,4 @@ btnRules.addEventListener('click', () => {
 btnRestart.addEventListener('click', initGame);
 modalBtnRestart.addEventListener('click', initGame);
 
-// Arrancar el juego por primera vez
 initGame();

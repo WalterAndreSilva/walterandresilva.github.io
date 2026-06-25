@@ -17,8 +17,8 @@ body {
 
 .container {
     display: flex;
-    flex-direction: column; /* Cambiado a un flujo vertical */
-    width: 600px; /* Más estrecho para adaptarse al diseño centrado */
+    flex-direction: column;
+    width: 600px;
     max-width: 95vw;
     background: white;
     border-radius: 10px;
@@ -44,7 +44,7 @@ body {
 
 nav {
     display: flex;
-    gap: 15px; /* Botones de navegación en fila */
+    gap: 15px;
 }
 
 nav button, #btn-restart {
@@ -163,7 +163,7 @@ background: #c0392b;
 
 /* Sección de Reglas */
 #rules-section {
-max-width: 500px; /* Evita que el texto se extienda demasiado */
+max-width: 500px;
 }
 
 #rules-section h2, #rules-section h3 {
@@ -187,21 +187,18 @@ hr {
     margin: 15px 0;
 }
 
-/* --- ESTILOS DEL MODAL (CARTEL FINAL) --- */
 .modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.6); /* Fondo oscuro semitransparente */
+    background: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000; /* Asegura que esté por encima de todo */
+    z-index: 1000;
 }
-
-/* La clase .hidden ya la tienes definida arriba, así que ocultará el modal cuando esté activa */
 
 .modal-content {
     background: white;
@@ -219,7 +216,7 @@ hr {
 .modal-content h2 {
     font-size: 2rem;
     color: #2c3e50;
-    white-space: pre-wrap; /* Permite saltos de línea si el texto es largo */
+    white-space: pre-wrap;
 }
 
 #modal-btn-restart {
@@ -240,6 +237,6 @@ background: #c0392b;
 
 /* Pequeña animación para que el cartel aparezca con un salto */
 @keyframes popIn {
-    from { transform: scale(0.8); opacity: 0; }
+    from { transform: scale(0.2); opacity: 0; }
     to { transform: scale(1); opacity: 1; }
 }
