@@ -1,0 +1,245 @@
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f4f4f9;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    display: flex;
+    flex-direction: column; /* Cambiado a un flujo vertical */
+    width: 600px; /* Más estrecho para adaptarse al diseño centrado */
+    max-width: 95vw;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+
+/* Cabecera superior */
+.header {
+    background: #2c3e50;
+    color: white;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    letter-spacing: 2px;
+}
+
+nav {
+    display: flex;
+    gap: 15px; /* Botones de navegación en fila */
+}
+
+nav button, #btn-restart {
+    padding: 10px 20px;
+    background: #34495e;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background 0.3s;
+}
+
+nav button:hover, #btn-restart:hover {
+    background: #465c71;
+}
+
+nav button.active {
+    background: #3498db;
+}
+
+/* Área principal */
+.content {
+    flex: 1;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* Estilos de la sección del tablero */
+#board-section {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 25px;
+width: 100%;
+}
+
+#game-board {
+display: grid;
+grid-template-columns: repeat(4, 80px);
+grid-template-rows: repeat(4, 80px);
+gap: 5px;
+background: #bdc3c7;
+padding: 10px;
+border-radius: 5px;
+}
+
+.cell {
+    background: #ecf0f1;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 3px;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Controles de estado y reinicio */
+#game-controls {
+display: flex;
+flex-direction: column;
+align-items: center;
+gap: 15px;
+width: 100%;
+}
+
+#status {
+padding: 10px;
+text-align: center;
+font-weight: bold;
+width: 100%;
+max-width: 335px;
+}
+
+#btn-restart {
+width: 100%;
+max-width: 335px;
+background: #e74c3c;
+}
+
+#btn-restart:hover {
+background: #c0392b;
+}
+
+/* Fichas */
+.piece {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.player1 {
+    background: #e74c3c;
+    box-shadow: inset -5px -5px 10px rgba(0,0,0,0.2);
+}
+
+.player2 {
+    background: #2980b9;
+    box-shadow: inset -5px -5px 10px rgba(0,0,0,0.2);
+}
+
+.piece.selected {
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(241, 196, 15, 0.8);
+    border: 3px solid #f1c40f;
+}
+
+/* Sección de Reglas */
+#rules-section {
+max-width: 500px; /* Evita que el texto se extienda demasiado */
+}
+
+#rules-section h2, #rules-section h3 {
+margin-bottom: 10px;
+color: #2c3e50;
+}
+
+#rules-section p, #rules-section ul {
+margin-bottom: 15px;
+line-height: 1.6;
+}
+
+#rules-section ul {
+padding-left: 20px;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: #ccc;
+    margin: 15px 0;
+}
+
+/* --- ESTILOS DEL MODAL (CARTEL FINAL) --- */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6); /* Fondo oscuro semitransparente */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Asegura que esté por encima de todo */
+}
+
+/* La clase .hidden ya la tienes definida arriba, así que ocultará el modal cuando esté activa */
+
+.modal-content {
+    background: white;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 90%;
+    animation: popIn 0.3s ease-out;
+}
+
+.modal-content h2 {
+    font-size: 2rem;
+    color: #2c3e50;
+    white-space: pre-wrap; /* Permite saltos de línea si el texto es largo */
+}
+
+#modal-btn-restart {
+padding: 15px 30px;
+background: #e74c3c;
+color: white;
+border: none;
+border-radius: 5px;
+font-size: 1.2rem;
+font-weight: bold;
+cursor: pointer;
+transition: background 0.3s;
+}
+
+#modal-btn-restart:hover {
+background: #c0392b;
+}
+
+/* Pequeña animación para que el cartel aparezca con un salto */
+@keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}

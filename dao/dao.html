@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego Dao</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Dao</h1>
+            <nav>
+                <button id="btn-board" class="active">Tablero</button>
+                <button id="btn-rules">Reglas</button>
+            </nav>
+        </header>
+
+        <main class="content">
+            <section id="board-section">
+                <div id="game-board"></div>
+
+                <div id="game-controls">
+                    <div id="status">Turno del Jugador 1</div>
+                    <button id="btn-restart">Reiniciar Juego</button>
+                </div>
+            </section>
+
+            <section id="rules-section" class="hidden">
+                <h2>Reglas de Dao</h2>
+                <p>Dao es un juego abstracto para dos jugadores en un tablero de 4x4. El objetivo es cumplir <strong>una</strong> de las siguientes condiciones de victoria:</p>
+                <ul>
+                    <li>Formar una línea recta (horizontal o vertical) con tus 4 piezas.</li>
+                    <li>Formar un cuadrado de 2x2 con tus piezas en cualquier lugar del tablero.</li>
+                    <li>Ocupar las 4 esquinas del tablero.</li>
+                </ul>
+                <hr>
+                <h3>Movimiento</h3>
+                <p>En tu turno, debes seleccionar y mover una de tus piezas. Las piezas se deslizan ortogonal o diagonalmente (como una reina en ajedrez) pero <strong>deben continuar moviéndose</strong> hasta chocar con el borde del tablero o con otra pieza.</p>
+                <hr>
+                <h3>Regla Especial (Atrapado)</h3>
+                <p>Si al finalizar tu movimiento encierras una pieza del oponente en una esquina usando 3 de tus piezas, ¡pierdes automáticamente la partida por obligarlo a no poder moverse!</p>
+            </section>
+        </main>
+    </div>
+    <div id="game-over-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 id="modal-message">¡El Jugador 1 ha ganado!</h2>
+            <button id="modal-btn-restart">Volver a jugar</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

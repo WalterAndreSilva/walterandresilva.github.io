@@ -305,3 +305,46 @@ footer {
     color: var(--bg-color);
     box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
 }
+
+/* DISEÑO PARA DAO GAME (Texto izquierda, Imagen derecha) */
+.dao-game-layout {
+    display: flex;
+    align-items: center; /* Centra los elementos verticalmente */
+    justify-content: space-between;
+    gap: 30px; /* Espacio entre el texto y la imagen */
+}
+
+.dao-game-text {
+    flex: 1; /* El texto ocupa todo el espacio restante */
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Mantiene el botón alineado a la izquierda */
+}
+
+.dao-game-text h3 {
+    width: 100%; /* Asegura que la línea inferior del h3 ocupe todo el ancho */
+}
+
+.dao-game-text p {
+    margin-bottom: 25px; /* Da espacio antes del botón */
+}
+
+.img-juego {
+    max-width: 250px; /* Ajusta este valor al tamaño deseado para tu imagen */
+    width: 100%;
+    border-radius: 8px; /* Bordes redondeados para mantener el estilo */
+    border: 1px solid #333;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Diseño responsivo: En pantallas pequeñas, el texto queda arriba y la imagen abajo */
+@media (max-width: 768px) {
+    .dao-game-layout {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .dao-game-text {
+        align-items: center; /* Centra el botón en móviles */
+    }
+}
