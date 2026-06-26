@@ -19,7 +19,6 @@
                     <li><a href="#" data-target="inicio" class="nav-btn active">Inicio</a></li>
                     <li><a href="#" data-target="perfil" class="nav-btn">Perfil</a></li>
                     <li><a href="#" data-target="proyectos" class="nav-btn">Proyecto</a></li>
-                    <li><a href="#" data-target="habilidades" class="nav-btn">Habilidades</a></li>
                 </ul>
             </nav>
         </div>
@@ -27,13 +26,11 @@
 
     <main class="container" id="main-content">
         <section id="inicio" class="section content-section active-section">
-
             <div class="intro-proyectos caja-interna">
                 <p>
                     Bienvenido, querido lector, a un paseo por nuevas ideas y un sinfín de posibilidades digitales.
                 </p>
             </div>
-
             <div class="caja-interna">
                 <h3>Novedades</h3>
                 <div class="caja-interna dao-game-layout">
@@ -42,58 +39,59 @@
                         <p>
                         ¿Buscan un desafío rápido y elegante para su próxima reunión? Anímense a probar Dao, un juego de pura estrategia donde cada movimiento cuenta y la astucia los mantendrá al borde del asiento. ¡Reúnan a sus amigos y demuestren quién es el verdadero maestro del tablero!
                         </p>
-                        <a href="dao/dao.html" class="btn-project">Ir al juego Dao</a>
+                        <a href="dao/dao.html" target="_blank" class="btn-project">Ir al juego Dao</a>
                     </div>
                     <img src="dao/image/dao.png" alt="Tablero del juego Dao" class="img-juego">
                 </div>
             </div>
-
         </section>
-        <section id="perfil" class="section content-section hidden-section">
 
+        <section id="perfil" class="section content-section hidden-section">
             <div class="intro-proyectos caja-interna">
                 <p>
-                    Breve resumen sobre mi y mi educacion en el rubro tecnologico.
+                    Breve resumen de mi perfil profesional y trayectoria académica en el ámbito tecnológico.
                 </p>
             </div>
-
-            <div class="caja-interna">
-                <h3>Sobre Mí</h3>
-                <p>
-                    Desarrollador enfocado en programación de sistemas a bajo nivel, gestión de memoria y optimización. Autodidacta por naturaleza, con un gusto por resolver problemas.
-                    Tengo experiencia trabajando con C, Python, Java, Haskel y bibliotecas gráficas. Actualmente me encuentro en la etapa de
-                    desarrollo de mi proyecto final de graduación.
-                </p>
+            <div class="caja-interna sobre-mi-layout">
+                <div >
+                    <h3>Sobre Mí</h3>
+                    <p>
+                        Desde muy joven, me ha apasionado construir y crear objetos a partir de estructuras existentes. Al descubrir el mundo de la computación, comprendí que podía llevar esta vocación a otro nivel; el desarrollo de software se convirtió en un interés profundo al cual he dedicado incontables horas. Mi naturaleza autodidacta y mi inclinación por la resolución de problemas han sido los pilares de mi formación. En la actual era de la información, el avance de la inteligencia artificial potencia aún más mi capacidad para innovar y crear soluciones.
+                    </p>
+                </div>
+                <img src="images/perfil.jpg" alt="Foto perfil" class="img-perfil">
             </div>
             <div class="caja-interna">
                 <h3>Estudios Universitarios</h3>
                 <p>
-                   Licenciatura en Ciencias de la Computacion cursando optativas de Computacion Paralela y Redes Neuronales.
+                   Obtuve el título de Analista en Computación en la Facultad de Matemática, Astronomía, Física y Computación (FaMAF-UNC), donde actualmente me encuentro cursando el tramo final de la Licenciatura en Ciencias de la Computación. Durante mi formación, seleccioné las materias optativas de Computación Paralela y Redes Neuronales, áreas que considero fundamentales en el panorama actual de la informática.
                 </p>
             </div>
-            <div class="caja-interna">
+            <div class="caja-interna cursos-text">
                 <h3>Cursos</h3>
                 <p>
-                    Antes de iniar la carrera universitaria realize cusos de Java en Udemi y clases de ingles en OMPersonal. Durante mis estudios universitario tambien asisti a charlas de software libre y ciberseguridad.
+                    Previo al inicio de mi formación universitaria, realicé cursos de Java en Udemy y clases de inglés en OM Personal. Durante mi carrera, asistí a charlas sobre Software Libre y Ciberseguridad. Aunque sigo perfeccionando mi nivel de inglés con práctica constante, actualmente continúo mi formación técnica a través de cursos en Google Skills.
                 </p>
+                <a href="https://www.credly.com/users/walter-andre-silva/badges/credly" target="_blank" rel="noopener noreferrer" class="btn-project">Ir al Credly</a>
             </div>
             <div class="caja-interna">
-                <h3>En contaste aprendisaje</h3>
-                <p>
-                    Aunque mi ingles no es muy fluido sigo practicando constantemente para mejorar.
-                    Actualmente realizo cursos de Google Skill.
-                </p>
+                <h3>Certificados</h3>
+                <div class="carrusel-certificados" id="contenedor-carrusel">
+                    <div class="carrusel-track" id="track-certificados">
+                        <img src="images/om.jpg" alt="Certificado 1" class="cert-img">
+                        <img src="images/java.jpg" alt="Certificado 2" class="cert-img">
+                        <img src="images/ia.png" alt="Certificado 3" class="cert-img">
+                    </div>
+                </div>
             </div>
         </section>
 
        <section id="proyectos" class="section content-section hidden-section">
-
             <div class="intro-proyectos caja-interna">
                 <p>
                     En esta sección agrego algunos proyectos que he desarrollado con el paso del tiempo. Muchos los realicé solo con el propósito de aprender alguna tecnología en particular o algún lenguaje de programación. Los invito a que los utilicen y los difundan si les parecen útiles.
                 </p>
             </div>
-
             <div class="contenedor-proyectos caja-interna">
                 <h3>Proyectos Destacados</h3>
                 <div class="projects-grid">
@@ -144,7 +142,7 @@
                 </div>
             </div>
             <div class="caja-interna">
-                <h3>Lenguajes con los que estube trabajando</h3>
+                <h3>Lenguajes de programación utilizados</h3>
                 <div class="enum-container">
                     <span class="enum-badge">C</span>
                     <span class="enum-badge">Haskel</span>
@@ -158,11 +156,8 @@
                     <span class="enum-badge">Fish</span>
                 </div>
             </div>
-        </section>
-
-        <section id="habilidades" class="section content-section hidden-section">
-            <div class="caja-interna">
-                <h3>Habilidades Técnicas</h3>
+             <div class="caja-interna">
+                <h3>Tecnologías aplicadas</h3>
                 <div class="enum-container">
                     <span class="enum-badge">Godot</span>
                     <span class="enum-badge">MySQL</span>
@@ -171,13 +166,11 @@
                 </div>
             </div>
         </section>
-
     </main>
 
     <footer>
         <div class="container footer-content">
             <div class="footer-social">
-                <a href="tel:+543513201951" class="icon-btn" title="Teléfono"><i class="fa-solid fa-phone"></i></a>
                 <a href="https://www.linkedin.com/in/walter-andre-silva" target="_blank" class="icon-btn" title="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
                 <a href="https://github.com/WalterAndreSilva" target="_blank" class="icon-btn" title="GitHub"><i class="fa-brands fa-github"></i></a>
                 <a href="mailto:walter.andre.silva.1991@gmail.com" class="icon-btn" title="Contacto vía Email"><i class="fa-solid fa-envelope"></i></a>
@@ -185,6 +178,11 @@
             <p>&copy; 2026 Todos los derechos reservados.</p>
         </div>
     </footer>
+
+    <div id="modal-imagen" class="modal">
+        <span class="cerrar-modal">&times;</span>
+        <img class="modal-contenido" id="img-ampliada">
+    </div>
     <script src="script.js"></script>
 </body>
 </html>
