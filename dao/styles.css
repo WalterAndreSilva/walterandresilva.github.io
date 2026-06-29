@@ -182,6 +182,11 @@ nav button.active {
     border: 3px solid #f1c40f;
 }
 
+.invalid-move {
+    background-color: #e74c3c !important; /* Rojo */
+    transition: background-color 0.2s ease-in-out;
+}
+
 /* Sección de Reglas */
 #rules-section {
     max-width: 500px;

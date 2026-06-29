@@ -148,6 +148,24 @@ function handleCellClick(r, c) {
         renderBoard();
 
         checkGameEnd();
+        return;
+    }
+
+    showInvalidMove(r, c);
+}
+
+function showInvalidMove(r, c) {
+    const index = r * COLS + c;
+    const cellElement = boardElement.children[index];
+
+    if (cellElement) {
+        cellElement.classList.add('invalid-move');
+
+        setTimeout(() => {
+            if (boardElement.contains(cellElement)) {
+                cellElement.classList.remove('invalid-move');
+            }
+        }, 300); //1 segundo -> 1000 milisegundos
     }
 }
 
