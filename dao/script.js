@@ -203,7 +203,8 @@ function checkGameEnd() {
     if (checkWin(currentPlayer)) {
         let winMessage = currentPlayer === 1 ? translations[currentLang].winP1 :
         (isPvE ? translations[currentLang].winCPU : translations[currentLang].winP2);
-        endGameShowModal(winMessage);
+
+        endGameShowModal(winMessage, currentPlayer);
         return;
     }
 
@@ -216,7 +217,7 @@ function checkGameEnd() {
         .replace("{loser}", loserText)
         .replace("{winner}", winnerText);
 
-        endGameShowModal(trapMessage);
+        endGameShowModal(trapMessage, opponent);
         return;
     }
 
@@ -228,14 +229,28 @@ function checkGameEnd() {
     }
 }
 
-function makeAIMove() {
-    if (!gameActive || currentPlayer !== 2) return;
+function endGameShowModal(message, winnerPlayer) {
+    statusElement.innerText = message;
+    modalMessageElement.innerText = message;
 
+    // Jugador 1 = #ff7675 (Rojo/Rosado) | Jugador 2 / CPU = #74b9ff (Azul)
+    const winnerColor = winnerPlayer === 1 ? '#ff7675' : '#74b9ff';
+
+    statusElement.style.color = winnerColor;
+    modalMessageElement.style.color = winnerColor;
+
+    modalElement.classList.remove('hidden');
+    gameControlsElement.style.visibility = 'hidden';
+    gameActive = false;
+}
+
+// Toma de decisiones de la CPU
+
+function getAllMovesForPlayer(player) {
     let allMoves = [];
-
     for (let r = 0; r < ROWS; r++) {
         for (let c = 0; c < COLS; c++) {
-            if (board[r][c] === 2) {
+            if (board[r][c] === player) {
                 let pieceMoves = calculateValidMovesForPiece(r, c);
                 pieceMoves.forEach(move => {
                     allMoves.push({ from: { r, c }, to: move });
@@ -243,28 +258,100 @@ function makeAIMove() {
             }
         }
     }
+    return allMoves;
+}
+
+// Algoritmo Minimax con Poda Alfa-Beta
+function minimax(depth, alpha, beta, isMaximizing) {
+    if (checkWin(2)) return 100 + depth;
+    if (checkWin(1)) return -100 - depth;
+    if (checkTrapLoss(2)) return -100 - depth;
+    if (checkTrapLoss(1)) return 100 + depth;
+
+    if (depth === 0) return 0;
+
+    if (isMaximizing) {
+        let maxEval = -Infinity;
+        let moves = getAllMovesForPlayer(2);
+        for (let move of moves) {
+            board[move.to.r][move.to.c] = 2;
+            board[move.from.r][move.from.c] = 0;
+
+            let ev = minimax(depth - 1, alpha, beta, false);
+
+            board[move.from.r][move.from.c] = 2;
+            board[move.to.r][move.to.c] = 0;
+
+            maxEval = Math.max(maxEval, ev);
+            alpha = Math.max(alpha, ev);
+            if (beta <= alpha) break;
+        }
+        return maxEval;
+    } else {
+        let minEval = Infinity;
+        let moves = getAllMovesForPlayer(1);
+        for (let move of moves) {
+            board[move.to.r][move.to.c] = 1;
+            board[move.from.r][move.from.c] = 0;
+
+            let ev = minimax(depth - 1, alpha, beta, true);
+
+            board[move.from.r][move.from.c] = 1;
+            board[move.to.r][move.to.c] = 0;
+
+            minEval = Math.min(minEval, ev);
+            beta = Math.min(beta, ev);
+            if (beta <= alpha) break;
+        }
+        return minEval;
+    }
+}
+
+function makeAIMove() {
+    if (!gameActive || currentPlayer !== 2) return;
+
+    let bestScore = -Infinity;
+    let bestMoves = [];
+
+    const DEPTH = 4;
+
+    let allMoves = getAllMovesForPlayer(2);
 
     if (allMoves.length === 0) return;
-
-    let chosenMove = null;
 
     for (let move of allMoves) {
         board[move.to.r][move.to.c] = 2;
         board[move.from.r][move.from.c] = 0;
 
         if (checkWin(2)) {
-            chosenMove = move;
+            bestMoves = [move];
+            board[move.from.r][move.from.c] = 2;
+            board[move.to.r][move.to.c] = 0;
+            break;
         }
+
+        if (checkTrapLoss(2)) {
+            board[move.from.r][move.from.c] = 2;
+            board[move.to.r][move.to.c] = 0;
+            continue;
+        }
+
+        let score = minimax(DEPTH - 1, -Infinity, Infinity, false);
 
         board[move.from.r][move.from.c] = 2;
         board[move.to.r][move.to.c] = 0;
 
-        if (chosenMove) break;
+        if (score > bestScore) {
+            bestScore = score;
+            bestMoves = [move];
+        } else if (score === bestScore) {
+            bestMoves.push(move);
+        }
     }
 
-    if (!chosenMove) {
-        chosenMove = allMoves[Math.floor(Math.random() * allMoves.length)];
-    }
+    let chosenMove = bestMoves.length > 0
+    ? bestMoves[Math.floor(Math.random() * bestMoves.length)]
+    : allMoves[Math.floor(Math.random() * allMoves.length)];
 
     selectedCell = chosenMove.from;
     renderBoard();
@@ -276,14 +363,6 @@ function makeAIMove() {
         renderBoard();
         checkGameEnd();
     }, 400);
-}
-
-function endGameShowModal(message) {
-    statusElement.innerText = message;
-    modalMessageElement.innerText = message;
-    modalElement.classList.remove('hidden');
-    gameControlsElement.style.visibility = 'hidden';
-    gameActive = false;
 }
 
 function checkWin(p) {
