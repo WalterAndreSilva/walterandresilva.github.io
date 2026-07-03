@@ -336,7 +336,7 @@ function makeAIMove() {
     let bestScore = -Infinity;
     let bestMoves = [];
 
-    const depthMap = [1, 2, 4, 6];
+    const depthMap = [1, 2, 3, 4];
     const DEPTH = depthMap[currentDifficulty - 1];
 
     let allMoves = getAllMovesForPlayer(2);
