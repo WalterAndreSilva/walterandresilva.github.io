@@ -1,3 +1,4 @@
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import {
     getFirestore, doc, onSnapshot, updateDoc, increment,
@@ -5,7 +6,7 @@ import {
     orderBy, limit
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 import {
-    getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged
+    getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -151,14 +152,36 @@ btnFiltroAnonimo.addEventListener("click", () => {
 });
 
 // --- GESTIÓN DE SESIÓN CON GOOGLE ---
-btnLogin.addEventListener("click", async () => {
-    try {
-        await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-        console.error("Error al iniciar sesión con Google:", error);
-    }
+// --- VERIFICAR RESULTADO DE REDIRECCIÓN (Para celulares) ---
+// Cuando el celular regresa de la página de Google, verificamos si hubo errores
+getRedirectResult(auth).catch((error) => {
+    console.error("Error al volver de la redirección de Google:", error);
+    mensajeEstado.className = "estado-perdiste";
+    mensajeEstado.innerHTML = "⚠️ No se pudo iniciar sesión en el móvil. Asegúrate de abrir la web en un navegador normal (Chrome/Safari).";
 });
 
+// --- GESTIÓN DE SESIÓN CON GOOGLE (Híbrido: PC y Móvil) ---
+btnLogin.addEventListener("click", async () => {
+    // Detectamos si es un dispositivo móvil (celular o tablet)
+    const esMovil = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+    try {
+        if (esMovil) {
+            // En móviles redirigimos la página completa hacia Google
+            await signInWithRedirect(auth, googleProvider);
+        } else {
+            // En PC abrimos la clásica ventana emergente (popup)
+            await signInWithPopup(auth, googleProvider);
+        }
+    } catch (error) {
+        console.error("Error al iniciar sesión:", error);
+
+        // Si por alguna razón falla el popup en PC (ej. bloqueador de anuncios), usamos redirección como respaldo
+        if (error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
+            await signInWithRedirect(auth, googleProvider);
+        }
+    }
+});
 btnLogout.addEventListener("click", () => signOut(auth));
 
 onAuthStateChanged(auth, async (user) => {
