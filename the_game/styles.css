@@ -1,0 +1,254 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    text-align: center;
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 800px;
+    width: 100%;
+}
+
+h1 {
+    color: #d32f2f;
+    margin-bottom: 5px;
+}
+
+/* AUTENTICACIÓN GOOGLE */
+#auth-section {
+display: flex;
+justify-content: flex-end;
+margin-bottom: 20px;
+border-bottom: 1px solid #eee;
+padding-bottom: 15px;
+}
+
+.btn-google {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #fff;
+    color: #444;
+    border: 1px solid #ddd;
+    padding: 8px 16px;
+    font-size: 0.95rem;
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+.btn-google:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.btn-google img {
+    width: 18px;
+    height: 18px;
+}
+
+#user-info {
+display: flex;
+align-items: center;
+gap: 12px;
+font-size: 0.95rem;
+font-weight: 600;
+color: #333;
+}
+#user-pic {
+width: 36px;
+height: 36px;
+border-radius: 50%;
+border: 2px solid #d32f2f;
+}
+.btn-secundario {
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    background-color: #e0e0e0;
+    color: #333;
+    box-shadow: none;
+}
+.btn-secundario:hover {
+    background-color: #ccc;
+}
+.oculto {
+    display: none !important;
+}
+
+/* Cajas de mensaje de estado */
+#mensaje-estado {
+padding: 15px;
+border-radius: 8px;
+margin: 20px 0;
+font-weight: bold;
+font-size: 1.1rem;
+transition: all 0.3s ease;
+}
+
+.estado-perdiste {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 2px solid #ef5350;
+}
+
+.estado-salvo {
+    background-color: #fff8e1;
+    color: #f57f17;
+    border: 2px solid #ffd54f;
+}
+
+#contador {
+font-size: 3.5rem;
+font-weight: bold;
+color: #333;
+margin: 15px 0;
+}
+
+button {
+    padding: 15px 30px;
+    font-size: 1.3rem;
+    font-weight: bold;
+    background-color: #d32f2f;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3);
+}
+
+button:hover { background-color: #b71c1c; }
+button:active { transform: scale(0.96); }
+button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 40px;
+}
+
+@media (max-width: 768px) {
+    .charts-grid { grid-template-columns: 1fr; }
+}
+
+.chart-box {
+    background: #fafafa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+
+h3 { color: #444; font-size: 1.1rem; }
+
+/* HISTORIAL DE PÉRDIDAS */
+.historial-box {
+    margin-top: 40px;
+    background: #fafafa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    text-align: left;
+}
+.historial-box h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+}
+.item-historial {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background: white;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    border-left: 4px solid #d32f2f;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+}
+.jugador-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: #333;
+}
+.jugador-info img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+.fecha-info {
+    font-size: 0.85rem;
+    color: #777;
+}
+.cargando {
+    text-align: center;
+    color: #888;
+}
+
+/* CUADRÍCULA DOBLE DE HISTORIALES */
+.historial-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 40px;
+    width: 100%;
+}
+
+@media (max-width: 768px) {
+    .historial-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* HISTORIAL DE PÉRDIDAS */
+.historial-box {
+    background: #fafafa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #eee;
+    text-align: left;
+}
+.historial-box h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    text-align: center;
+}
+.item-historial {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 15px;
+    background: white;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    border-left: 4px solid #d32f2f;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+}
+.jugador-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: #333;
+}
+.jugador-info img {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+}
+.fecha-info {
+    font-size: 0.85rem;
+    color: #777;
+}
+.cargando {
+    text-align: center;
+    color: #888;
+}

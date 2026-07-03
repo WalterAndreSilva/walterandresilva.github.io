@@ -3,101 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contador en Tiempo Real con Firebase</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            background-color: #f4f7f6;
-            margin: 0;
-        }
-        .container {
-            text-align: center;
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        h1 { color: #333; margin-bottom: 10px; }
-        #contador {
-            font-size: 4rem;
-            font-weight: bold;
-            color: #4CAF50;
-            margin: 20px 0;
-        }
-        button {
-            padding: 12px 24px;
-            font-size: 1.1rem;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-        button:hover { background-color: #45a049; }
-        button:active { transform: scale(0.98); }
-    </style>
+    <title>Perdí The Game - Estadísticas</title>
+    <!-- Librería externa Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Enlace a la hoja de estilos externa -->
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
     <div class="container">
-        <h1>Contador Global</h1>
+        <!-- BARRA DE USUARIO (AUTH GOOGLE) -->
+        <div id="auth-section">
+            <button id="btn-login" class="btn-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                Identificarse con Google
+            </button>
+            <div id="user-info" class="oculto">
+                <img id="user-pic" src="" alt="Foto">
+                <span id="user-name">Usuario</span>
+                <button id="btn-logout" class="btn-secundario">Salir</button>
+            </div>
+        </div>
+
+        <h1>THE GAME</h1>
+
+        <!-- Caja dinámica de mensaje según si pasó 1 hora o no -->
+        <div id="mensaje-estado">Verificando tu estado...</div>
+
         <div id="contador">Cargando...</div>
-        <button id="btn-incrementar">¡Incrementar!</button>
+
+        <div class="charts-grid">
+            <div class="chart-box">
+                <h3>Pérdidas - Última Hora (por intervalos de 10 min)</h3>
+                <canvas id="chartHora"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3>Pérdidas - Últimas 24 Horas (por hora)</h3>
+                <canvas id="chart24Horas"></canvas>
+            </div>
+        </div>
+
+        <div class="historial-grid">
+            <!-- 1. Historial Personal del Usuario -->
+            <div class="historial-box">
+                <h3>👤 Tus pérdidas registradas</h3>
+                <div id="lista-historial-usuario">
+                    <p class="cargando">Inicia sesión con Google para ver tu historial.</p>
+                </div>
+            </div>
+
+            <!-- 2. Historial Global Reciente (Top 10) -->
+            <div class="historial-box">
+                <h3>🌍 Últimos 10 en perder (Global)</h3>
+                <div id="lista-historial-global">
+                    <p class="cargando">Cargando registro global...</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Importamos los módulos de Firebase mediante CDN usando la versión modular moderna (v9/v10+) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, doc, onSnapshot, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-        // ⚠️ REEMPLAZA ESTO CON LOS DATOS DE TU PROPIO PROYECTO DE FIREBASE
-        const firebaseConfig = {
-  apiKey: "AIzaSyC6hFXNWgiXtDVsX5OeYOQCJJJnmVpzRR8",
-  authDomain: "the-game-6642c.firebaseapp.com",
-  projectId: "the-game-6642c",
-  storageBucket: "the-game-6642c.firebasestorage.app",
-  messagingSenderId: "906956439022",
-  appId: "1:906956439022:web:8e7039119ba133ae5c62ff"
-};
-
-        // Inicializar Firebase y Firestore
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-
-        // Referencia exacta al documento que creamos en la consola
-        const docRef = doc(db, "contadores", "global");
-
-        // Elementos del DOM
-        const contadorElemento = document.getElementById("contador");
-        const botonIncrementar = document.getElementById("btn-incrementar");
-
-        // 1. ESCUCHAR CAMBIOS EN TIEMPO REAL
-        // onSnapshot se ejecuta automáticamente la primera vez y cada vez que el documento cambie en la nube
-        onSnapshot(docRef, (docSnap) => {
-            if (docSnap.exists()) {
-                contadorElemento.textContent = docSnap.data().valor;
-            } else {
-                contadorElemento.textContent = "Error: El doc no existe";
-            }
-        });
-
-        // 2. ACTUALIZAR EL CONTADOR (INCREMENTAR)
-        botonIncrementar.addEventListener("click", async () => {
-            try {
-                // Usamos increment(1) de Firebase de forma atómica para evitar conflictos si muchos usuarios hacen clic a la vez
-                await updateDoc(docRef, {
-                    valor: increment(1)
-                });
-            } catch (error) {
-                console.error("Error al actualizar el contador: ", error);
-            }
-        });
-    </script>
+    <!-- Enlace al archivo JavaScript como módulo para soportar los imports -->
+    <script type="module" src="script.js"></script>
 </body>
 </html>
