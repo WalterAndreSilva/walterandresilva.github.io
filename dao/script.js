@@ -8,6 +8,7 @@ let validMoves = [];
 let gameActive = true;
 let isPvE = false;
 let currentLang = 'en';
+let currentDifficulty = 1;
 
 const translations = {
     es: {
@@ -35,7 +36,12 @@ const translations = {
         player1: "Jugador 1",
         player2: "Jugador 2",
         cpu: "La CPU",
-        langToggle: "🌐 ES"
+        langToggle: "🌐 ES",
+        difficulty: "Dificultad:",
+        diff1: "Fácil",
+        diff2: "Medio",
+        diff3: "Difícil",
+        diff4: "Experto"
     },
     en: {
         pvp: "P vs P",
@@ -62,7 +68,12 @@ const translations = {
         player1: "Player 1",
         player2: "Player 2",
         cpu: "The CPU",
-        langToggle: "🌐 EN"
+        langToggle: "🌐 EN",
+        difficulty: "Difficulty: ",
+        diff1: "Easy",
+        diff2: "Medium",
+        diff3: "Hard",
+        diff4: "Expert"
     }
 };
 
@@ -87,6 +98,9 @@ const modalElement = document.getElementById('game-over-modal');
 const modalMessageElement = document.getElementById('modal-message');
 const modalBtnRestart = document.getElementById('modal-btn-restart');
 const btnLang = document.getElementById('btn-lang');
+const difficultyContainer = document.getElementById('difficulty-container');
+const diffButtons = document.querySelectorAll('.diff-btn');
+
 
 // Inicializa o reinicia el estado de la partida
 function initGame() {
@@ -134,7 +148,7 @@ function handleCellClick(r, c) {
 
     if (board[r][c] === currentPlayer) {
         selectedCell = { r, c };
-        calculateValidMoves(r, c);
+        validMoves = calculateValidMovesForPiece(r, c);
         renderBoard();
         return;
     }
@@ -167,10 +181,6 @@ function showInvalidMove(r, c) {
             }
         }, 300); //1 segundo -> 1000 milisegundos
     }
-}
-
-function calculateValidMoves(r, c) {
-    validMoves = calculateValidMovesForPiece(r, c);
 }
 
 function calculateValidMovesForPiece(r, c) {
@@ -244,6 +254,19 @@ function endGameShowModal(message, winnerPlayer) {
     gameActive = false;
 }
 
+diffButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+
+        if (btn.classList.contains('active')) return;
+
+        diffButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentDifficulty = parseInt(btn.getAttribute('data-level'));
+
+        initGame();
+    });
+});
+
 // Toma de decisiones de la CPU
 
 function getAllMovesForPlayer(player) {
@@ -313,7 +336,8 @@ function makeAIMove() {
     let bestScore = -Infinity;
     let bestMoves = [];
 
-    const DEPTH = 4;
+    const depthMap = [1, 2, 4, 6];
+    const DEPTH = depthMap[currentDifficulty - 1];
 
     let allMoves = getAllMovesForPlayer(2);
 
@@ -431,6 +455,7 @@ function setActiveTab(activeBtn) {
     if (activeBtn !== btnRules) {
         boardSection.classList.remove('hidden');
         rulesSection.classList.add('hidden');
+        gameControlsElement.style.visibility = 'visible';
     }
 }
 
@@ -439,11 +464,15 @@ function updateTranslations() {
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (translations[currentLang][key]) {
-            el.innerHTML = translations[currentLang][key];
+            if (key === 'rulesP1' || key === 'rulesMoveP') {
+                el.innerHTML = translations[currentLang][key];
+            } else {
+                el.textContent = translations[currentLang][key];
+            }
         }
     });
 
-    btnLang.innerText = translations[currentLang].langToggle;
+    btnLang.textContent = translations[currentLang].langToggle;
     updateStatus();
 }
 
@@ -456,12 +485,14 @@ btnLang.addEventListener('click', toggleLanguage);
 
 btnPvP.addEventListener('click', () => {
     isPvE = false;
+    difficultyContainer.classList.add('hidden');
     setActiveTab(btnPvP);
     initGame();
 });
 
 btnCPU.addEventListener('click', () => {
     isPvE = true;
+    difficultyContainer.classList.remove('hidden');
     setActiveTab(btnCPU);
     initGame();
 });
@@ -477,3 +508,4 @@ modalBtnRestart.addEventListener('click', initGame);
 
 initGame();
 updateTranslations();
+

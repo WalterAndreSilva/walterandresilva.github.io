@@ -22,8 +22,16 @@
 
         <main class="content">
             <section id="board-section">
+                <div id="difficulty-container" class="hidden">
+                    <span id="difficulty-label" data-i18n="difficulty">Dificultad:</span>
+                    <div class="diff-buttons">
+                        <button class="diff-btn active" data-level="1" data-i18n="diff1">Fácil</button>
+                        <button class="diff-btn" data-level="2" data-i18n="diff2">Medio</button>
+                        <button class="diff-btn" data-level="3" data-i18n="diff3">Difícil</button>
+                        <button class="diff-btn" data-level="4" data-i18n="diff4">Experto</button>
+                    </div>
+                </div>
                 <div id="game-board"></div>
-
                 <div id="game-controls">
                     <div id="status">Turno del Jugador 1</div>
                     <button id="btn-restart" data-i18n="restart">Reiniciar Juego</button>
