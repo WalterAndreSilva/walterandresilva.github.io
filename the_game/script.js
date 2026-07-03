@@ -27,7 +27,6 @@ const coleccionPerdidas = collection(db, "perdidas");
 
 const contadorElemento = document.getElementById("contador");
 const mensajeEstado = document.getElementById("mensaje-estado");
-const listaHistorial = document.getElementById("lista-historial");
 
 // Elementos Auth HTML
 const btnLogin = document.getElementById("btn-login");
@@ -36,41 +35,30 @@ const userInfo = document.getElementById("user-info");
 const userPic = document.getElementById("user-pic");
 const userName = document.getElementById("user-name");
 
+// Elemento Botón Anónimo y su contenedor
+const btnAnonimo = document.getElementById("btn-anonimo");
+const accionAnonima = document.getElementById("accion-anonima");
+
+// Botón filtro
+const btnFiltroAnonimo = document.getElementById("btn-filtro-anonimo");
+
+const listaHistorialUsuario = document.getElementById("lista-historial-usuario");
+const listaHistorialGlobal = document.getElementById("lista-historial-global");
+
 let chartHora, chart24Horas;
 let usuarioActual = null;
+let unsubscribeHistorialUsuario = null;
+let unsubscribeHistorialGlobal = null;
+let ocultarAnonimos = false;
 
-// --- GESTIÓN DE SESIÓN CON GOOGLE ---
-btnLogin.addEventListener("click", async () => {
-    try {
-        await signInWithPopup(auth, googleProvider);
-    } catch (error) {
-        console.error("Error al iniciar sesión con Google:", error);
-    }
-});
-
-btnLogout.addEventListener("click", () => signOut(auth));
-
-onAuthStateChanged(auth, (user) => {
-    usuarioActual = user;
-    if (user) {
-        btnLogin.classList.add("oculto");
-        userInfo.classList.remove("oculto");
-        userName.textContent = user.displayName || "Jugador";
-        userPic.src = user.photoURL || "https://ui-avatars.com/api/?name=" + (user.displayName || "X");
-    } else {
-        btnLogin.classList.remove("oculto");
-        userInfo.classList.add("oculto");
-    }
-});
-
-// Función central que registra pérdidas en Firestore (incluye datos del usuario si está logueado)
-async function registrarPerdidaEnBD() {
+// --- FUNCIÓN PARA REGISTRAR EN FIRESTORE ---
+async function registrarPerdidaEnBD(esAnonimoForzado = false) {
     try {
         await addDoc(coleccionPerdidas, {
             fecha: serverTimestamp(),
-                     nombre: usuarioActual ? usuarioActual.displayName : "Anónimo",
-                     foto: usuarioActual ? usuarioActual.photoURL : null,
-                     uid: usuarioActual ? usuarioActual.uid : null
+                     nombre: (!esAnonimoForzado && usuarioActual) ? usuarioActual.displayName : "Anónimo",
+                     foto: (!esAnonimoForzado && usuarioActual) ? usuarioActual.photoURL : null,
+                     uid: (!esAnonimoForzado && usuarioActual) ? usuarioActual.uid : null
         });
         await updateDoc(docRefGlobal, { valor: increment(1) });
         actualizarGraficos();
@@ -79,34 +67,88 @@ async function registrarPerdidaEnBD() {
     }
 }
 
-// --- LÓGICA DE AUTOMATIZACIÓN DE VISITA (1 HORA) ---
-async function verificarIngresoAutomatico() {
+// --- LÓGICA DE VERIFICACIÓN DE PÉRDIDA (MIXTO: STORAGE PARA ANÓNIMOS, DB PARA USUARIOS) ---
+async function verificarOProcesarPerdida(esAnonimoForzado = false) {
     const TIEMPO_ESPERA_MS = 60 * 60 * 1000; // 1 hora en milisegundos
-    const ultimaPerdida = localStorage.getItem("theGame_ultimaPerdida");
     const ahora = Date.now();
 
-    if (!ultimaPerdida || (ahora - parseInt(ultimaPerdida)) > TIEMPO_ESPERA_MS) {
-        localStorage.setItem("theGame_ultimaPerdida", ahora.toString());
+    if (esAnonimoForzado) {
+        const ultimaPerdida = localStorage.getItem("theGame_ultimaPerdida_Anonimo");
 
-        mensajeEstado.className = "estado-perdiste";
-        mensajeEstado.innerHTML = "💥 ¡Pensaste en el juego y perdiste! Se ha registrado tu pérdida automáticamente.";
-
-        await registrarPerdidaEnBD();
+        if (!ultimaPerdida || (ahora - parseInt(ultimaPerdida)) > TIEMPO_ESPERA_MS) {
+            localStorage.setItem("theGame_ultimaPerdida_Anonimo", ahora.toString());
+            mensajeEstado.className = "estado-perdiste";
+            mensajeEstado.innerHTML = "🥷 ¡Se ha registrado tu pérdida como Anónimo!";
+            await registrarPerdidaEnBD(true);
+        } else {
+            mostrarInmunidad(TIEMPO_ESPERA_MS - (ahora - parseInt(ultimaPerdida)), true);
+        }
     } else {
-        const tiempoRestanteMs = TIEMPO_ESPERA_MS - (ahora - parseInt(ultimaPerdida));
-        const minutosRestantes = Math.ceil(tiempoRestanteMs / (1000 * 60));
+        if (!usuarioActual) return;
 
-        mensajeEstado.className = "estado-salvo";
-        mensajeEstado.innerHTML = `🛡️ Ya habías ingresado recientemente. No se sumó una nueva pérdida.<br>Estás inmune por aproximadamente <b>${minutosRestantes} minutos</b> más.`;
+        mensajeEstado.className = "estado-info";
+        mensajeEstado.innerHTML = "⏳ Verificando tu estado en la base de datos...";
+
+        try {
+            const qUltima = query(
+                coleccionPerdidas,
+                where("uid", "==", usuarioActual.uid),
+                                  orderBy("fecha", "desc"),
+                                  limit(1)
+            );
+
+            const snapshot = await getDocs(qUltima);
+            let ultimaPerdidaMs = 0;
+
+            if (!snapshot.empty) {
+                const docData = snapshot.docs[0].data();
+                if (docData.fecha) {
+                    ultimaPerdidaMs = docData.fecha.toDate().getTime();
+                }
+            }
+
+            if (ultimaPerdidaMs === 0 || (ahora - ultimaPerdidaMs) > TIEMPO_ESPERA_MS) {
+                mensajeEstado.className = "estado-perdiste";
+                mensajeEstado.innerHTML = "💥 ¡Bienvenido/a de nuevo! Has perdido en The Game.";
+                await registrarPerdidaEnBD(false);
+            } else {
+                mostrarInmunidad(TIEMPO_ESPERA_MS - (ahora - ultimaPerdidaMs), false);
+            }
+
+        } catch (error) {
+            console.error("Error al consultar la BD:", error);
+            mensajeEstado.innerHTML = "⚠️ Hubo un error verificando tu estado.";
+        }
     }
 }
 
-// --- ESCUCHAR HISTORIAL DE PÉRDIDAS EN TIEMPO REAL ---
-// Actualizamos las referencias a los dos nuevos contenedores en el HTML
-const listaHistorialUsuario = document.getElementById("lista-historial-usuario");
-const listaHistorialGlobal = document.getElementById("lista-historial-global");
+function mostrarInmunidad(tiempoRestanteMs, esAnonimo) {
+    const minutosRestantes = Math.ceil(tiempoRestanteMs / (1000 * 60));
+    mensajeEstado.className = "estado-salvo";
+    mensajeEstado.innerHTML = `🛡️ Ya sumaste una pérdida recientemente${esAnonimo ? ' (Anónimo)' : ''}.<br>Estás inmune por aproximadamente <b>${minutosRestantes} minutos</b> más.`;
+}
 
-let unsubscribeHistorialUsuario = null;
+// --- ACCIONES DE BOTONES ---
+btnAnonimo.addEventListener("click", async () => {
+    btnAnonimo.disabled = true;
+    await verificarOProcesarPerdida(true);
+    setTimeout(() => { btnAnonimo.disabled = false; }, 2000);
+});
+
+btnFiltroAnonimo.addEventListener("click", () => {
+    ocultarAnonimos = !ocultarAnonimos;
+
+    if (ocultarAnonimos) {
+        btnFiltroAnonimo.innerHTML = "🥷 Mostrar Todos";
+        btnFiltroAnonimo.style.backgroundColor = "#ffc107";
+    } else {
+        btnFiltroAnonimo.innerHTML = "👁️ Ocultar Anónimos";
+        btnFiltroAnonimo.style.backgroundColor = "#e0e0e0";
+    }
+
+    // Recargar el historial global con el nuevo filtro
+    escucharHistorialGlobal();
+});
 
 // --- GESTIÓN DE SESIÓN CON GOOGLE ---
 btnLogin.addEventListener("click", async () => {
@@ -124,22 +166,26 @@ onAuthStateChanged(auth, async (user) => {
     if (user) {
         btnLogin.classList.add("oculto");
         userInfo.classList.remove("oculto");
+        if (accionAnonima) accionAnonima.classList.add("oculto");
+
         userName.textContent = user.displayName || "Jugador";
         userPic.src = user.photoURL || "https://ui-avatars.com/api/?name=" + (user.displayName || "X");
 
-        // Cargar historial personal en su propia lista
         cargarHistorialUsuario(user.uid);
+        await verificarOProcesarPerdida(false);
     } else {
         btnLogin.classList.remove("oculto");
         userInfo.classList.add("oculto");
+        if (accionAnonima) accionAnonima.classList.remove("oculto");
+
+        mensajeEstado.className = "estado-info";
+        mensajeEstado.innerHTML = "👀 Estás en modo espectador. Identifícate o usa el botón para sumar una pérdida.";
 
         if (unsubscribeHistorialUsuario) {
             unsubscribeHistorialUsuario();
         }
-        listaHistorialUsuario.innerHTML = "<p class='cargando'>Inicia sesión con Google para ver tu historial.</p>";
+        listaHistorialUsuario.innerHTML = "<p class='cargando'>Inicia sesión para ver tu historial.</p>";
     }
-
-    await verificarIngresoAutomatico();
 });
 
 // --- 1. ESCUCHAR HISTORIAL PERSONAL EN TIEMPO REAL ---
@@ -148,7 +194,6 @@ function cargarHistorialUsuario(uid) {
         unsubscribeHistorialUsuario();
     }
 
-    // Traer hasta 15 pérdidas del usuario actual
     const qUsuario = query(
         coleccionPerdidas,
         where("uid", "==", uid),
@@ -178,9 +223,9 @@ function cargarHistorialUsuario(uid) {
             itemDiv.className = "item-historial";
             itemDiv.innerHTML = `
             <div class="jugador-info">
-            <span>Fecha </span>
+            <span>📅 ${fechaFormateada}</span>
             </div>
-            <div class="fecha-info">📅 ${fechaFormateada} a las ${horaFormateada}</div>
+            <div class="fecha-info">⏰ las ${horaFormateada}</div>
             `;
             listaHistorialUsuario.appendChild(itemDiv);
         });
@@ -191,18 +236,44 @@ function cargarHistorialUsuario(uid) {
 
 // --- 2. ESCUCHAR HISTORIAL GLOBAL RECIENTE EN TIEMPO REAL ---
 function escucharHistorialGlobal() {
-    // Consulta para los 10 últimos registros de cualquier jugador
-    const qGlobal = query(coleccionPerdidas, orderBy("fecha", "desc"), limit(10));
+    if (unsubscribeHistorialGlobal) {
+        unsubscribeHistorialGlobal();
+    }
 
-    onSnapshot(qGlobal, (snapshot) => {
+    let qGlobal;
+    if (ocultarAnonimos) {
+        // Al usar "!=" en Firestore, primero se debe ordenar por la propiedad filtrada y luego por fecha
+        qGlobal = query(
+            coleccionPerdidas,
+            where("nombre", "!=", "Anónimo"),
+                        orderBy("nombre"),
+                        orderBy("fecha", "desc"),
+                        limit(10)
+        );
+    } else {
+        qGlobal = query(coleccionPerdidas, orderBy("fecha", "desc"), limit(10));
+    }
+
+    unsubscribeHistorialGlobal = onSnapshot(qGlobal, (snapshot) => {
         if (snapshot.empty) {
-            listaHistorialGlobal.innerHTML = "<p class='cargando'>Aún no hay registros globales.</p>";
+            listaHistorialGlobal.innerHTML = "<p class='cargando'>No hay registros para mostrar con el filtro actual.</p>";
             return;
         }
 
         listaHistorialGlobal.innerHTML = "";
-        snapshot.forEach((docSnap) => {
-            const data = docSnap.data();
+
+        // Al ordenar primero por 'nombre', la base nos las devuelve desordenadas en tiempo.
+        // Por ello las acomodamos en JavaScript en estricto orden cronológico antes de mostrarlas:
+        const documentos = [];
+        snapshot.forEach((docSnap) => documentos.push(docSnap.data()));
+
+        documentos.sort((a, b) => {
+            const fechaA = a.fecha ? a.fecha.toDate().getTime() : 0;
+            const fechaB = b.fecha ? b.fecha.toDate().getTime() : 0;
+            return fechaB - fechaA; // Orden descendente (más recientes primero)
+        });
+
+        documentos.forEach((data) => {
             const nombre = data.nombre || "Anónimo";
             const foto = data.foto || `https://ui-avatars.com/api/?name=${encodeURIComponent(nombre)}&background=ef5350&color=fff`;
 
@@ -248,7 +319,7 @@ function inicializarGraficos() {
 // Escuchar Contador Global en Tiempo Real
 onSnapshot(docRefGlobal, (docSnap) => {
     if (docSnap.exists()) {
-        contadorElemento.textContent = `${docSnap.data().valor} perdedores totales`;
+        contadorElemento.textContent = `${docSnap.data().valor} juegos perdidos en total`;
     }
 });
 
@@ -303,7 +374,7 @@ async function actualizarGraficos() {
         chart24Horas.update();
 }
 
-// Inicializar la aplicación apenas abre la web
+// Inicializar la aplicación
 inicializarGraficos();
 escucharHistorialGlobal();
 actualizarGraficos();

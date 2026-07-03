@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perdí The Game - Estadísticas</title>
-    <!-- Librería externa Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Enlace a la hoja de estilos externa -->
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -27,14 +25,21 @@
 
         <h1>THE GAME</h1>
 
-        <!-- Caja dinámica de mensaje según si pasó 1 hora o no -->
-        <div id="mensaje-estado">Verificando tu estado...</div>
+        <!-- Caja dinámica de mensaje -->
+        <div id="mensaje-estado" class="estado-info">
+            👀 Estás en modo espectador. Identifícate o usa el botón para sumar una pérdida.
+        </div>
+
+        <!-- Botón opcional para sumar en modo anónimo -->
+        <div id="accion-anonima">
+            <button id="btn-anonimo" class="btn-anonimo">🥷 Sumar pérdida (Anónimo)</button>
+        </div>
 
         <div id="contador">Cargando...</div>
 
         <div class="charts-grid">
             <div class="chart-box">
-                <h3>Pérdidas - Última Hora (por intervalos de 10 min)</h3>
+                <h3>Pérdidas - Última Hora (por intervals de 10 min)</h3>
                 <canvas id="chartHora"></canvas>
             </div>
             <div class="chart-box">
@@ -44,7 +49,6 @@
         </div>
 
         <div class="historial-grid">
-            <!-- 1. Historial Personal del Usuario -->
             <div class="historial-box">
                 <h3>👤 Tus pérdidas registradas</h3>
                 <div id="lista-historial-usuario">
@@ -52,9 +56,13 @@
                 </div>
             </div>
 
-            <!-- 2. Historial Global Reciente (Top 10) -->
             <div class="historial-box">
-                <h3>🌍 Últimos 10 en perder (Global)</h3>
+                <div class="cabecera-global">
+                    <h3>🌍 Últimos 10 en perder</h3>
+                    <button id="btn-filtro-anonimo" class="btn-secundario">
+                        👁️ Ocultar Anónimos
+                    </button>
+                </div>
                 <div id="lista-historial-global">
                     <p class="cargando">Cargando registro global...</p>
                 </div>
@@ -62,7 +70,6 @@
         </div>
     </div>
 
-    <!-- Enlace al archivo JavaScript como módulo para soportar los imports -->
     <script type="module" src="script.js"></script>
 </body>
 </html>

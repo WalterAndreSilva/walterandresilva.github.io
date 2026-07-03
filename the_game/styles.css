@@ -252,3 +252,60 @@ h3 { color: #444; font-size: 1.1rem; }
     text-align: center;
     color: #888;
 }
+
+/* Nuevo estado informativo (Modo Espectador) */
+.estado-info {
+    background-color: #e3f2fd;
+    color: #1565c0;
+    border: 2px solid #64b5f6;
+}
+
+/* Sección y botón para sumar como anónimo */
+#accion-anonima {
+margin: 15px 0 25px 0;
+}
+
+.btn-anonimo {
+    background-color: #455a64;
+    box-shadow: 0 4px 10px rgba(69, 90, 100, 0.3);
+}
+
+.btn-anonimo:hover {
+    background-color: #263238;
+}
+
+/* --- CABECERA HISTORIAL GLOBAL Y BOTÓN FILTRO --- */
+.cabecera-global {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+.cabecera-global h3 {
+    margin: 0;
+}
+
+/* Estilo exclusivo para el botón de ocultar/mostrar anónimos */
+#btn-filtro-anonimo {
+font-size: 0.82rem;
+font-weight: 600;
+padding: 6px 14px;
+border-radius: 16px;
+border: 1px solid #ccc;
+background-color: #e0e0e0;
+color: #333;
+cursor: pointer;
+transition: background-color 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+#btn-filtro-anonimo:hover {
+background-color: #d5d5d5;
+box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#btn-filtro-anonimo:active {
+transform: scale(0.96);
+}
