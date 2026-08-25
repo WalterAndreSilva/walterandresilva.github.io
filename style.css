@@ -334,6 +334,14 @@ footer {
     margin-bottom: 25px;
 }
 
+.dao-game-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* Espacio entre los botones */
+    margin-top: 10px; /* Separación respecto al texto superior */
+    width: fit-content; /* Para que el botón no ocupe todo el ancho si no es necesario */
+}
+
 .img-juego {
     max-width: 250px;
     width: 100%;
