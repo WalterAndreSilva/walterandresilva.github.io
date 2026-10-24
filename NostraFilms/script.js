@@ -1,8 +1,8 @@
 // ============================================================
 // Configuración TMDb
 // ============================================================
-const API_KEY = 'eb0e234111b1624330856ca3b90f31a6';
-const BASE_URL = 'https://api.themoviedb.org/3';
+// Intermediario (Cloudflare Worker): agrega la clave de TMDb en el servidor, así no queda expuesta aquí
+const BASE_URL = 'https://nostrafilms-api.walter-andre-silva-1991.workers.dev';
 const IMG_BASE_URL = 'https://image.tmdb.org/t/p/w780';
 const LOGO_BASE_URL = 'https://image.tmdb.org/t/p/w92';
 const WATCH_REGION = 'AR'; // país para las plataformas (códigos ISO: AR, MX, ES, US...)
@@ -51,13 +51,13 @@ let detailToken = 0;
 // ============================================================
 const MOODS = [
     { id: 'happy',      emoji: '😄', label: 'Feliz',             genres: [35, 12],   avoid: [27, 53, 10752, 80, 18] },
-    { id: 'sad',        emoji: '😢', label: 'Melancólico',       genres: [18, 10749],       avoid: [27, 28] },
-    { id: 'energetic',  emoji: '🤩', label: 'Con energía',       genres: [28, 12, 878],     avoid: [99, 36] },
-    { id: 'relaxed',    emoji: '😌', label: 'Relajado',          genres: [35, 10751, 12], avoid: [27, 53, 10752, 80] },
-    { id: 'romantic',   emoji: '🥰', label: 'Romántico',         genres: [10749],           avoid: [27, 10752, 53, 28] },
-    { id: 'thrill',     emoji: '😱', label: 'Quiero adrenalina', genres: [27, 53],          avoid: [10751, 16, 10402] },
-    { id: 'thoughtful', emoji: '🤔', label: 'Reflexivo',         genres: [99],      avoid: [27, 16] },
-    { id: 'curious',    emoji: '🕵️', label: 'Curioso',           genres: [9648, 80],    avoid: [10402, 10749, 10751] }
+{ id: 'sad',        emoji: '😢', label: 'Melancólico',       genres: [18, 10749],       avoid: [27, 28] },
+{ id: 'energetic',  emoji: '🤩', label: 'Con energía',       genres: [28, 12, 878],     avoid: [99, 36] },
+{ id: 'relaxed',    emoji: '😌', label: 'Relajado',          genres: [35, 10751, 12], avoid: [27, 53, 10752, 80] },
+{ id: 'romantic',   emoji: '🥰', label: 'Romántico',         genres: [10749],           avoid: [27, 10752, 53, 28] },
+{ id: 'thrill',     emoji: '😱', label: 'Quiero adrenalina', genres: [27, 53],          avoid: [10751, 16, 10402] },
+{ id: 'thoughtful', emoji: '🤔', label: 'Reflexivo',         genres: [99],      avoid: [27, 16] },
+{ id: 'curious',    emoji: '🕵️', label: 'Curioso',           genres: [9648, 80],    avoid: [10402, 10749, 10751] }
 ];
 
 const WEATHER_TYPES = {
@@ -153,6 +153,8 @@ window.addEventListener('DOMContentLoaded', () => {
     mountResults('mood', true);
     mountResults('weather', true);
 
+    wireFilterToggle(document.getElementById('randomFiltersToggle'), document.getElementById('randomFilters'));
+    document.getElementById('randomFilters').innerHTML = filterBarHtml({ withIds: [], withoutIds: [], matchAll: false });
     renderMoods();
     renderWeatherTypes();
     setupTabs();
@@ -199,7 +201,7 @@ function mountResults(key, startHidden) {
         <div data-role="block" class="${startHidden ? 'hidden' : ''}">
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mb-4">
                 <h2 data-role="title" class="scroll-mt-24 text-2xl font-bold tracking-tight text-white flex flex-wrap items-center gap-x-2 gap-y-1"></h2>
-                <button type="button" data-role="filtersToggle" aria-expanded="false" title="Ver categorías elegidas y evitadas" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/70 transition-colors"><span>Filtros</span> <i data-role="chevron" class="fa-solid fa-chevron-down text-[9px] transition-transform"></i></button>
+                <button type="button" data-role="filtersToggle" aria-expanded="false" title="Ver categorías elegidas y evitadas" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/70 transition-colors"><i class="fa-solid fa-sliders"></i> <span>Filtros</span> <i data-role="chevron" class="fa-solid fa-chevron-down text-[9px] transition-transform"></i></button>
             </div>
             <div data-role="filters" class="hidden flex-col gap-2 mb-5 p-3 rounded-xl bg-neutral-900/60 border border-neutral-800"></div>
             <div class="flex flex-wrap items-center gap-3 mb-5">
@@ -277,7 +279,7 @@ function scrollToResults(ctx) {
 // ============================================================
 async function fetchGenres() {
     try {
-        const response = await fetch(`${BASE_URL}/genre/movie/list?api_key=${API_KEY}&language=es-ES`);
+        const response = await fetch(`${BASE_URL}/genre/movie/list?language=es-ES`);
         const data = await response.json();
         if (!response.ok || !data.genres) throw new Error(data.status_message || 'Respuesta inválida');
         data.genres.forEach(g => { genresMap[g.id] = g.name; });
@@ -561,7 +563,7 @@ async function pickRandomMovie() {
         </div>`;
 
     const fetchPage = async (page) => {
-        const response = await fetch(`${BASE_URL}/discover/movie?api_key=${API_KEY}&language=es-ES&sort_by=popularity.desc&vote_count.gte=200&${releasedParam()}&include_adult=false&page=${page}`);
+        const response = await fetch(`${BASE_URL}/discover/movie?language=es-ES&sort_by=popularity.desc&vote_count.gte=200&${releasedParam()}&include_adult=false&page=${page}`);
         const data = await response.json();
         if (!response.ok) throw new Error(data.status_message);
         return data.results || [];
@@ -658,7 +660,7 @@ async function fetchPopularMovies(ctx) {
     showSkeletons(ctx);
 
     try {
-        const url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=es-ES&${sortParams(ctx.sort, 1000, 200)}&${releasedParam()}&include_adult=false`;
+        const url = `${BASE_URL}/discover/movie?language=es-ES&${sortParams(ctx.sort, 1000, 200)}&${releasedParam()}&include_adult=false`;
         const { results: list, totalPages } = await fetchMovieList(url);
         if (token !== ctx.token) return;
         Object.assign(ctx, { baseUrl: url, nextPage: 4, totalPages, loadingMore: false });
@@ -677,7 +679,7 @@ async function fetchDiscover(ctx, opts) {
     setFilterBar(ctx, withIds, withoutIds, separator === ',');
     ctx.lastFetch = () => fetchDiscover(ctx, opts);
 
-    let url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=es-ES&${sortParams(ctx.sort)}&${releasedParam()}&include_adult=false`;
+    let url = `${BASE_URL}/discover/movie?language=es-ES&${sortParams(ctx.sort)}&${releasedParam()}&include_adult=false`;
     if (withIds.length) url += `&with_genres=${encodeURIComponent(withIds.join(separator))}`;
     if (withoutIds.length) url += `&without_genres=${encodeURIComponent(withoutIds.join(','))}`;
 
@@ -1029,7 +1031,7 @@ async function openMovieDetails(movieId) {
     modalContent.classList.add('scale-100');
 
     try {
-        const response = await fetch(`${BASE_URL}/movie/${movieId}?api_key=${API_KEY}&language=es-ES`);
+        const response = await fetch(`${BASE_URL}/movie/${movieId}?language=es-ES`);
         const movie = await response.json();
         if (!response.ok) throw new Error(movie.status_message);
 
@@ -1054,7 +1056,7 @@ async function loadProviders(movieId, token, box) {
     box.innerHTML = '<p class="text-xs text-neutral-500">Buscando plataformas...</p>';
     const heading = '<h4 class="text-xs font-bold text-white uppercase tracking-wide mb-2 flex items-center gap-2"><i class="fa-solid fa-tv text-netflix-red"></i> Dónde ver (Argentina)</h4>';
     try {
-        const response = await fetch(`${BASE_URL}/movie/${movieId}/watch/providers?api_key=${API_KEY}`);
+        const response = await fetch(`${BASE_URL}/movie/${movieId}/watch/providers`);
         const data = await response.json();
         if (!response.ok) throw new Error(data.status_message);
         if (token !== detailToken) return;
