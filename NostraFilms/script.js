@@ -50,7 +50,7 @@ let detailToken = 0;
 // "genres": la película debe tener TODAS a la vez. "avoid": categorías predefinidas a evitar
 // ============================================================
 const MOODS = [
-    { id: 'happy',      emoji: '😄', label: 'Feliz',             genres: [35, 12],   avoid: [27, 53, 10752, 80, 18] },
+{ id: 'happy',      emoji: '😄', label: 'Feliz',             genres: [35, 12],   avoid: [27, 53, 10752, 80, 18] },
 { id: 'sad',        emoji: '😢', label: 'Melancólico',       genres: [18, 10749],       avoid: [27, 28] },
 { id: 'energetic',  emoji: '🤩', label: 'Con energía',       genres: [28, 12, 878],     avoid: [99, 36] },
 { id: 'relaxed',    emoji: '😌', label: 'Relajado',          genres: [35, 10751, 12], avoid: [27, 53, 10752, 80] },
@@ -153,8 +153,6 @@ window.addEventListener('DOMContentLoaded', () => {
     mountResults('mood', true);
     mountResults('weather', true);
 
-    wireFilterToggle(document.getElementById('randomFiltersToggle'), document.getElementById('randomFilters'));
-    document.getElementById('randomFilters').innerHTML = filterBarHtml({ withIds: [], withoutIds: [], matchAll: false });
     renderMoods();
     renderWeatherTypes();
     setupTabs();
