@@ -30,28 +30,42 @@ let detailToken = 0;
 
 // ============================================================
 // Configuración editable: estados de ánimo y clima -> géneros TMDb
-// (28 Acción, 12 Aventura, 16 Animación, 35 Comedia, 80 Crimen, 99 Documental,
-//  18 Drama, 10751 Familia, 14 Fantasía, 36 Historia, 27 Terror, 10402 Música,
-//  9648 Misterio, 10749 Romance, 878 Ciencia ficción, 53 Suspense, 10752 Bélica)
-// "genres": la película debe tener AL MENOS UNO. "avoid": no debe tener ninguno.
+// 28    Acción,
+// 12    Aventura,
+// 16    Animación,
+// 35    Comedia,
+// 80    Crimen,
+// 99    Documental,
+// 18    Drama,
+// 10751 Familia,
+// 14    Fantasía,
+// 36    Historia,
+// 27    Terror,
+// 10402 Música,
+// 9648  Misterio,
+// 10749 Romance,
+// 878   Ciencia ficción,
+// 53    Suspense,
+// 10752 Bélica
+// "genres": la película debe tener TODAS a la vez. "avoid": categorías predefinidas a evitar
 // ============================================================
 const MOODS = [
-    { id: 'happy',      emoji: '😄', label: 'Feliz',             genres: [35, 16, 10751],   avoid: [27, 53] },
-    { id: 'sad',        emoji: '😢', label: 'Melancólico',       genres: [18, 10749],       avoid: [27] },
-    { id: 'energetic',  emoji: '🤩', label: 'Con energía',       genres: [28, 12, 878],     avoid: [] },
-    { id: 'relaxed',    emoji: '😌', label: 'Relajado',          genres: [35, 10751, 16, 10402], avoid: [27, 53, 10752] },
-    { id: 'romantic',   emoji: '🥰', label: 'Romántico',         genres: [10749],           avoid: [27] },
-    { id: 'thrill',     emoji: '😱', label: 'Quiero adrenalina', genres: [27, 53],          avoid: [] },
-    { id: 'thoughtful', emoji: '🤔', label: 'Reflexivo',         genres: [18, 99, 36],      avoid: [] },
-    { id: 'curious',    emoji: '🕵️', label: 'Curioso',           genres: [9648, 80, 14],    avoid: [] }
+    { id: 'happy',      emoji: '😄', label: 'Feliz',             genres: [35, 12],   avoid: [27, 53, 10752, 80, 18] },
+    { id: 'sad',        emoji: '😢', label: 'Melancólico',       genres: [18, 10749],       avoid: [27, 28] },
+    { id: 'energetic',  emoji: '🤩', label: 'Con energía',       genres: [28, 12, 878],     avoid: [99, 36] },
+    { id: 'relaxed',    emoji: '😌', label: 'Relajado',          genres: [35, 10751, 12], avoid: [27, 53, 10752, 80] },
+    { id: 'romantic',   emoji: '🥰', label: 'Romántico',         genres: [10749],           avoid: [27, 10752, 53, 28] },
+    { id: 'thrill',     emoji: '😱', label: 'Quiero adrenalina', genres: [27, 53],          avoid: [10751, 16, 10402] },
+    { id: 'thoughtful', emoji: '🤔', label: 'Reflexivo',         genres: [99],      avoid: [27, 16] },
+    { id: 'curious',    emoji: '🕵️', label: 'Curioso',           genres: [9648, 80],    avoid: [10402, 10749, 10751] }
 ];
 
 const WEATHER_TYPES = {
-    sunny:  { emoji: '☀️',  label: 'Soleado',  genres: [12, 35, 16, 10751], avoid: [] },
-    cloudy: { emoji: '☁️',  label: 'Nublado',  genres: [9648, 18, 53],      avoid: [] },
-    rain:   { emoji: '🌧️', label: 'Lluvioso', genres: [10749, 18, 9648],   avoid: [] },
-    snow:   { emoji: '❄️',  label: 'Nevado',   genres: [10751, 14, 16],     avoid: [27] },
-    storm:  { emoji: '⛈️',  label: 'Tormenta', genres: [27, 53, 878],       avoid: [] }
+    sunny:  { emoji: '☀️',  label: 'Soleado',  genres: [12, 35, 16, 10751], avoid: [27, 53, 10752] },
+    cloudy: { emoji: '☁️',  label: 'Nublado',  genres: [9648, 18, 53],      avoid: [16, 10402] },
+    rain:   { emoji: '🌧️', label: 'Lluvioso', genres: [10749, 18],   avoid: [27, 28, 10752] },
+    snow:   { emoji: '❄️',  label: 'Nevado',   genres: [10751, 14, 16],     avoid: [27, 53, 10752] },
+    storm:  { emoji: '⛈️',  label: 'Tormenta', genres: [27, 53, 878],       avoid: [10751, 16, 10749] }
 };
 
 // Código WMO (Open-Meteo) -> tipo de clima
@@ -107,6 +121,13 @@ function escapeHtml(str) {
 
 function genreNames(ids) {
     return ids.map(id => genresMap[id] || id).join(', ');
+}
+
+// Una película se muestra si ya se estrenó, no está vista y no tiene ningún género a evitar
+function isShown(m, ctx, today) {
+    if (!m.release_date || m.release_date > today || seenMovies.has(m.id)) return false;
+    const banned = ctx.excludeIds || [];
+    return !(m.genre_ids || []).some(id => banned.includes(id));
 }
 
 // Fecha local de hoy (YYYY-MM-DD) para descartar estrenos futuros
@@ -176,9 +197,11 @@ function mountResults(key, startHidden) {
     const host = document.getElementById(`${key}Results`);
     host.innerHTML = `
         <div data-role="block" class="${startHidden ? 'hidden' : ''}">
-            <div class="flex items-center justify-between mb-4">
-                <h2 data-role="title" class="text-2xl font-bold tracking-tight text-white flex flex-wrap items-center gap-x-2 gap-y-1"></h2>
+            <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mb-4">
+                <h2 data-role="title" class="scroll-mt-24 text-2xl font-bold tracking-tight text-white flex flex-wrap items-center gap-x-2 gap-y-1"></h2>
+                <button type="button" data-role="filtersToggle" aria-expanded="false" title="Ver categorías elegidas y evitadas" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/70 transition-colors"><span>Filtros</span> <i data-role="chevron" class="fa-solid fa-chevron-down text-[9px] transition-transform"></i></button>
             </div>
+            <div data-role="filters" class="hidden flex-col gap-2 mb-5 p-3 rounded-xl bg-neutral-900/60 border border-neutral-800"></div>
             <div class="flex flex-wrap items-center gap-3 mb-5">
                 <select data-role="sort" class="bg-neutral-800 text-neutral-200 text-xs rounded-xl px-3 py-2.5 border border-neutral-700 focus:outline-none focus:border-netflix-red">
                     <option value="rating">Ordenar: Mejor valoradas</option>
@@ -205,13 +228,44 @@ function mountResults(key, startHidden) {
     const block = host.firstElementChild;
     const q = role => block.querySelector(`[data-role="${role}"]`);
     const ctx = results[key] = {
-        key, token: 0, selected: 0, scrollTimer: null, block, title: q('title'), grid: q('grid'), empty: q('empty'),
+        key, token: 0, selected: 0, scrollTimer: null, block, title: q('title'), filters: q('filters'), filterState: { withIds: [], withoutIds: [], matchAll: false }, grid: q('grid'), empty: q('empty'),
         count: q('count'), restoreBtn: q('restore'),
         sort: 'rating', raw: [], visible: [], lastFetch: null
     };
+    wireFilterToggle(q('filtersToggle'), ctx.filters);
     q('sort').addEventListener('change', e => { ctx.sort = e.target.value; if (ctx.lastFetch) ctx.lastFetch(); });
     q('random').addEventListener('click', () => pickFromList(ctx));
     ctx.restoreBtn.addEventListener('click', clearSeen);
+}
+
+// Barra con las categorías elegidas (verde) y las evitadas (rojo)
+function filterBarHtml({ withIds, withoutIds, matchAll }) {
+    const chip = (id, cls) => `<span class="px-2.5 py-1 text-xs rounded-full border ${cls}">${escapeHtml(genresMap[id] || id)}</span>`;
+    const inc = 'bg-green-950/60 text-green-200 border-green-800';
+    const exc = 'bg-red-950 text-red-200 border-red-800';
+    const incLabel = withIds.length > 1 ? (matchAll ? 'Elegidas (todas a la vez)' : 'Elegidas (cualquiera)') : 'Elegidas';
+    const row = (icon, color, label, ids, cls, none) => `
+        <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-xs font-semibold text-neutral-300 flex items-center gap-1.5 mr-1"><i class="fa-solid ${icon} ${color}"></i> ${label}:</span>
+            ${ids.length ? ids.map(id => chip(id, cls)).join('') : `<span class="text-xs text-neutral-500">${none}</span>`}
+        </div>`;
+    return row('fa-circle-check', 'text-green-500', incLabel, withIds, inc, 'todas las categorías')
+         + row('fa-ban', 'text-red-500', 'Evitadas', withoutIds, exc, 'ninguna');
+}
+
+// Botón discreto que despliega / oculta la barra de categorías
+function wireFilterToggle(btn, panel) {
+    btn.addEventListener('click', () => {
+        const open = panel.classList.toggle('hidden') === false;
+        panel.classList.toggle('flex', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.querySelector('[data-role="chevron"]').classList.toggle('rotate-180', open);
+    });
+}
+
+function setFilterBar(ctx, withIds, withoutIds, matchAll = false) {
+    ctx.filterState = { withIds, withoutIds, matchAll };
+    ctx.filters.innerHTML = filterBarHtml(ctx.filterState);
 }
 
 function scrollToResults(ctx) {
@@ -227,6 +281,7 @@ async function fetchGenres() {
         const data = await response.json();
         if (!response.ok || !data.genres) throw new Error(data.status_message || 'Respuesta inválida');
         data.genres.forEach(g => { genresMap[g.id] = g.name; });
+        Object.values(results).forEach(c => { c.filters.innerHTML = filterBarHtml(c.filterState); });
         renderGenres(data.genres);
     } catch (error) {
         console.error('Error al cargar géneros:', error);
@@ -337,7 +392,7 @@ function executeSearch() {
             withIds: [...includedGenres.keys()],
             withoutIds: [...excludedGenres.keys()],
             separator: matchMode.value === 'any' ? '|' : ',',
-            titleHtml: `<i class="fa-solid fa-film text-netflix-red"></i> <span>${escapeHtml(filtersSummary())}</span>`
+            titleHtml: `<i class="fa-solid fa-film text-netflix-red"></i> <span>Resultados de tu búsqueda</span>`
         });
     }
     scrollToResults(ctx);
@@ -378,9 +433,8 @@ function selectMood(moodId) {
     fetchDiscover(ctx, {
         withIds: mood.genres,
         withoutIds: mood.avoid,
-        separator: '|',
-        titleHtml: `<span>${mood.emoji} ${mood.label}</span>
-            <span class="text-xs font-normal text-neutral-500">Géneros: ${escapeHtml(genreNames(mood.genres))}</span>`
+        separator: ',', // todas las categorías a la vez
+        titleHtml: `<span>${mood.emoji} ${mood.label}</span>`
     });
     scrollToResults(ctx);
 }
@@ -482,9 +536,8 @@ function selectWeatherType(typeKey, info = {}) {
     fetchDiscover(ctx, {
         withIds: type.genres,
         withoutIds: type.avoid,
-        separator: '|',
-        titleHtml: `<span>${type.emoji} Clima: ${type.label}</span>
-            <span class="text-xs font-normal text-neutral-500">Géneros: ${escapeHtml(genreNames(type.genres))}</span>`
+        separator: ',', // todas las categorías a la vez
+        titleHtml: `<span>${type.emoji} Clima: ${type.label}</span>`
     });
     scrollToResults(ctx);
 }
@@ -548,7 +601,7 @@ function renderRandomCard(movie) {
 
     randomCard.innerHTML = `
         <div class="flex flex-col md:flex-row gap-6 bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden shadow-lg">
-            <img src="${posterUrl(movie.poster_path)}" alt="${escapeHtml(title)}" class="w-full md:w-72 object-cover bg-neutral-950"
+            <img src="${posterUrl(movie.poster_path)}" alt="${escapeHtml(title)}" class="w-full md:w-72 max-h-[26rem] md:max-h-none object-contain md:object-cover bg-neutral-950"
                  onerror="this.onerror=null;this.src='https://placehold.co/500x750/1f1f1f/ffffff?text=Error+Carga'">
             <div class="flex-1 p-6 flex flex-col justify-between gap-6">
                 <div>
@@ -596,6 +649,8 @@ async function fetchMovieList(url, pages = [1, 2, 3]) {
 
 async function fetchPopularMovies(ctx) {
     const token = ++ctx.token;
+    ctx.excludeIds = [];
+    setFilterBar(ctx, [], []);
     ctx.lastFetch = () => fetchPopularMovies(ctx);
     const recent = ctx.sort === 'recent';
     ctx.block.classList.remove('hidden');
@@ -618,6 +673,8 @@ async function fetchPopularMovies(ctx) {
 async function fetchDiscover(ctx, opts) {
     const { withIds = [], withoutIds = [], separator = ',', titleHtml = '' } = opts;
     const token = ++ctx.token;
+    ctx.excludeIds = withoutIds;
+    setFilterBar(ctx, withIds, withoutIds, separator === ',');
     ctx.lastFetch = () => fetchDiscover(ctx, opts);
 
     let url = `${BASE_URL}/discover/movie?api_key=${API_KEY}&language=es-ES&${sortParams(ctx.sort)}&${releasedParam()}&include_adult=false`;
@@ -642,7 +699,7 @@ async function fetchDiscover(ctx, opts) {
 // ============================================================
 // Carrusel
 // ============================================================
-const INFO_OPEN = ['w-52', 'sm:w-[26rem]', 'lg:w-[40rem]'];
+const INFO_OPEN = ['w-44', 'sm:w-[26rem]', 'lg:w-[40rem]'];
 const SEL_ON = ['border-netflix-red', 'shadow-[0_0_35px_rgba(229,9,20,0.5)]'];
 const SEL_OFF = ['border-neutral-700', 'shadow-xl', 'brightness-75', 'hover:brightness-100', 'hover:-translate-y-2'];
 
@@ -651,32 +708,32 @@ function cardHtml(m) {
         const title = escapeHtml(m.title || 'Título desconocido');
         const year = m.release_date.split('-')[0];
         const rating = m.vote_average ? m.vote_average.toFixed(1) : 'N/D';
-        const genres = (m.genre_ids || []).filter(id => genresMap[id]).slice(0, 3)
+        const genres = (m.genre_ids || []).filter(id => genresMap[id])
             .map(id => `<span class="px-2 py-0.5 bg-white/10 text-neutral-200 text-[11px] rounded-full border border-white/10">${escapeHtml(genresMap[id])}</span>`).join('');
         return `
         <div data-movie-id="${m.id}" class="relative shrink-0 flex h-80 sm:h-[26rem] lg:h-[30rem] rounded-xl overflow-hidden bg-neutral-900 border-2 cursor-pointer transition-all duration-500">
-            <div class="relative h-full w-52 sm:w-[17.333rem] lg:w-80 shrink-0 bg-neutral-950">
+            <div class="relative h-full w-40 sm:w-[17.333rem] lg:w-80 shrink-0 bg-neutral-950">
                 <img src="${posterUrl(m.poster_path)}" alt="${title}" loading="lazy" class="w-full h-full object-cover" onerror="${onErr}">
                 <div class="absolute top-2 left-2 bg-black/70 backdrop-blur-md px-2 py-1 rounded-md flex items-center gap-1 text-xs text-amber-400 font-bold border border-white/10">
                     <i class="fa-solid fa-star"></i><span>${rating}</span>
                 </div>
             </div>
             <div data-role="info" class="shrink-0 overflow-hidden transition-all duration-500 w-0">
-                <div class="w-52 sm:w-[26rem] lg:w-[40rem] h-full p-4 sm:p-6 flex flex-col justify-between bg-gradient-to-br from-neutral-900 to-neutral-950">
+                <div class="w-44 sm:w-[26rem] lg:w-[40rem] h-full p-3 sm:p-6 flex flex-col justify-between bg-gradient-to-br from-neutral-900 to-neutral-950">
                     <div class="min-h-0">
-                        <h3 class="text-lg sm:text-3xl font-extrabold text-white leading-tight line-clamp-2 mb-2">${title}</h3>
+                        <h3 class="text-base sm:text-3xl font-extrabold text-white leading-tight line-clamp-2 mb-2">${title}</h3>
                         <div class="flex items-center gap-3 text-xs sm:text-sm mb-3">
                             <span class="flex items-center gap-1 text-amber-400 font-bold"><i class="fa-solid fa-star"></i> ${rating}</span>
                             <span class="text-neutral-400">${year}</span>
                         </div>
-                        <div class="hidden sm:flex flex-wrap gap-1.5 mb-3">${genres}</div>
-                        <p class="text-xs sm:text-sm text-neutral-300 leading-relaxed line-clamp-5 sm:line-clamp-6">${escapeHtml(m.overview || 'Sinopsis no disponible en español para este título.')}</p>
+                        <div class="hidden sm:flex flex-wrap gap-1.5 mb-3 max-h-24 overflow-y-auto no-scrollbar">${genres}</div>
+                        <p class="text-xs sm:text-sm text-neutral-300 leading-relaxed line-clamp-4 sm:line-clamp-6">${escapeHtml(m.overview || 'Sinopsis no disponible en español para este título.')}</p>
                     </div>
-                    <div class="flex gap-2 pt-3">
-                        <button type="button" onclick="event.stopPropagation(); openMovieDetails(${m.id})" class="px-3 sm:px-4 py-2 bg-netflix-red hover:bg-netflix-redhover text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5">
+                    <div class="flex flex-col sm:flex-row gap-2 pt-3">
+                        <button type="button" onclick="event.stopPropagation(); openMovieDetails(${m.id})" class="px-3 sm:px-4 py-2 justify-center sm:justify-start bg-netflix-red hover:bg-netflix-redhover text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5">
                             <i class="fa-solid fa-tv"></i> Dónde ver
                         </button>
-                        <button type="button" onclick="markSeen(event, ${m.id})" title="Quitar de la lista" class="px-3 sm:px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold rounded-lg border border-neutral-700 transition-colors flex items-center gap-1.5">
+                        <button type="button" onclick="markSeen(event, ${m.id})" title="Quitar de la lista" class="px-3 sm:px-4 py-2 justify-center sm:justify-start bg-neutral-800 hover:bg-neutral-700 text-neutral-200 text-xs font-semibold rounded-lg border border-neutral-700 transition-colors flex items-center gap-1.5">
                             <i class="fa-solid fa-eye"></i> Ya la vi
                         </button>
                     </div>
@@ -703,7 +760,7 @@ function renderMovies(movies, ctx) {
     // Solo estrenadas y no vistas, ordenadas según la opción elegida
     const today = todayStr();
     const list = (movies || [])
-        .filter(m => m.release_date && m.release_date <= today && !seenMovies.has(m.id))
+        .filter(m => isShown(m, ctx, today))
         .sort((a, b) => ctx.sort === 'recent'
             ? b.release_date.localeCompare(a.release_date)
             : (b.vote_average || 0) - (a.vote_average || 0));
@@ -731,7 +788,7 @@ function renderMovies(movies, ctx) {
     ctx.grid.innerHTML = `
         <div class="relative isolate">
             ${arrow(-1, 'left-1', 'fa-chevron-left')}
-            <div data-role="track" class="relative flex items-center overflow-x-auto no-scrollbar py-8 px-3 [--overlap:-7.5rem] sm:[--overlap:-10.5rem] lg:[--overlap:-13rem]">${cards}<div data-role="spacer" class="shrink-0 w-[70%]" aria-hidden="true"></div></div>
+            <div data-role="track" class="relative flex items-center overflow-x-auto no-scrollbar py-8 px-3 [--overlap:-7rem] sm:[--overlap:-10.5rem] lg:[--overlap:-13rem]">${cards}<div data-role="spacer" class="shrink-0 w-[70%]" aria-hidden="true"></div></div>
             ${arrow(1, 'right-1', 'fa-chevron-right')}
         </div>`;
 
@@ -775,7 +832,8 @@ function slideTo(card, token, ctx, duration = 450) {
             if (ctx.selectToken !== token) return resolve(false);
             const p = Math.min(1, (now - t0) / duration);
             const ease = 1 - Math.pow(1 - p, 3);
-            const target = Math.max(0, card.offsetLeft - Math.min(card.offsetLeft, 110));
+            const lead = window.innerWidth < 640 ? 12 : 110; // en celular casi no se deja ver la tarjeta anterior
+            const target = Math.max(0, card.offsetLeft - Math.min(card.offsetLeft, lead));
             track.scrollLeft = start + (target - start) * ease;
             if (p < 1) requestAnimationFrame(frame); else resolve(true);
         };
@@ -821,7 +879,7 @@ async function loadMore(ctx) {
 
         const today = todayStr();
         const add = fresh
-            .filter(m => m.release_date && m.release_date <= today && !seenMovies.has(m.id))
+            .filter(m => isShown(m, ctx, today))
             .sort(compareMovies(ctx));
 
         const spacer = ctx.grid.querySelector('[data-role="spacer"]');
