@@ -199,7 +199,7 @@ function mountResults(key, startHidden) {
         <div data-role="block" class="${startHidden ? 'hidden' : ''}">
             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mb-4">
                 <h2 data-role="title" class="scroll-mt-24 text-2xl font-bold tracking-tight text-white flex flex-wrap items-center gap-x-2 gap-y-1"></h2>
-                <button type="button" data-role="filtersToggle" aria-expanded="false" title="Ver categorías elegidas y evitadas" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/70 transition-colors"><i class="fa-solid fa-sliders"></i> <span>Filtros</span> <i data-role="chevron" class="fa-solid fa-chevron-down text-[9px] transition-transform"></i></button>
+                <button type="button" data-role="filtersToggle" aria-expanded="false" title="Ver categorías elegidas y evitadas" class="inline-flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] text-neutral-500 hover:text-neutral-200 hover:bg-neutral-800/70 transition-colors"><span>Filtros</span> <i data-role="chevron" class="fa-solid fa-chevron-down text-[9px] transition-transform"></i></button>
             </div>
             <div data-role="filters" class="hidden flex-col gap-2 mb-5 p-3 rounded-xl bg-neutral-900/60 border border-neutral-800"></div>
             <div class="flex flex-wrap items-center gap-3 mb-5">
